@@ -1,0 +1,7 @@
+# Python 3.12. Exact versions tested from a fresh clone (install, pytest, figures) on 2026-11-17.
+cryptography==50.0.2
+pytest==9.2.0
+numpy==2.5.5
+pycryptodome==4.5.0
+matplotlib==3.11.2
+# SE-COLLAB only (optional): charm-crypto-framework==0.62 with the GMP and PBC libraries, see baselines/README.md

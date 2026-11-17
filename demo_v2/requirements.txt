@@ -1,0 +1,4 @@
+# Demo only, on top of amtp_code/requirements.txt. Exact versions tested on Python 3.12 on 2026-11-17.
+fastapi==0.163.1
+uvicorn==0.54.0
+websockets==17.4

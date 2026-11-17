@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AMTP live demo</title>
+<style>
+:root{
+  --bg:#eef0f3; --card:#fff; --ink:#22262c; --ink2:#737b87; --line:#e2e5e9; --soft:#f4f5f7;
+  --blue:#3a8fd6; --blue2:#2f78b7; --blueL:#e8f2fb; --dark:#3f444b; --dark2:#2d3136;
+  --green:#7cb342; --ok:#3d8b37; --okbg:#e8f5e1; --red:#d9534f; --redbg:#fbe9e8; --amber:#e3a21a; --amberbg:#fdf3dc;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--blue);text-decoration:none}
+.wrap{max-width:1360px;margin:0 auto;padding:0 20px}
+.mono{font-family:var(--mono);font-size:12px;word-break:break-all}
+.muted{color:var(--ink2)} .small{font-size:12.5px}
+
+/* top bar + title */
+.top{background:#fff;border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:58px}
+.logo{display:flex;align-items:center;gap:10px}
+.mark{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#5aaae6,#2f78b7);color:#fff;display:grid;place-items:center;font-weight:800}
+.logo b{display:block;font-size:19px;letter-spacing:.14em;line-height:1}
+.logo small{display:block;font-size:9.5px;letter-spacing:.18em;color:var(--ink2);margin-top:3px}
+nav{display:flex} nav a{color:var(--ink2);padding:18px 13px;font-size:13.5px;border-bottom:3px solid transparent}
+nav a:hover{color:var(--ink);border-bottom-color:var(--blue)}
+@media (max-width:820px){nav{display:none}}
+.titlebar{background:var(--dark);color:#fff;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.025) 0 2px,transparent 2px 6px)}
+.titlebar .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.titlebar h1{margin:0;font-size:20px;letter-spacing:.04em}
+.titlebar h1 span{color:#c4c8ce;font-weight:400}
+.titlebar .sub{font-size:12px;color:#c4c8ce}
+.stats{display:flex;gap:6px;flex-wrap:wrap}
+.stat{background:rgba(255,255,255,.1);border-radius:4px;padding:5px 10px;font-size:12px;color:#d5d9de}
+.stat b{color:#fff;font-size:14px;margin-right:4px}
+.strip{background:#fff8e4;border-bottom:1px solid #eedfb0;color:#6b5414;font-size:12.5px}
+.strip .wrap{display:flex;gap:18px;flex-wrap:wrap;padding-top:6px;padding-bottom:6px}
+#loading{background:#e9f2fb;border-bottom:1px solid #cfe1f3;font-size:12.5px}
+#loading .wrap{padding-top:7px;padding-bottom:7px}
+
+/* step tracker */
+.tracker{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 4px rgba(0,0,0,.04)}
+.tracker .wrap{display:flex;align-items:center;gap:6px;padding-top:9px;padding-bottom:9px;overflow-x:auto}
+.tstep{display:flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;background:var(--soft);color:var(--ink2);font-size:12.5px;white-space:nowrap;border:1px solid var(--line);transition:all .25s}
+.tstep i{font-style:normal;width:20px;height:20px;border-radius:50%;background:#c9ced6;color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+.tstep.active{background:var(--blueL);color:var(--blue2);border-color:#bcd8f1;box-shadow:0 0 0 3px rgba(58,143,214,.15)}
+.tstep.active i{background:var(--blue)}
+.tstep.done{background:var(--okbg);color:var(--ok);border-color:#cfe8c2} .tstep.done i{background:var(--green)}
+.tstep.fail{background:var(--redbg);color:var(--red);border-color:#f2c9c7} .tstep.fail i{background:var(--red)}
+.tsep{color:#c3c8cf}
+.tracker .opts{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:12px;color:var(--ink2);white-space:nowrap}
+
+/* stage: user | wire | server */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 170px minmax(0,1fr);gap:0;padding-top:18px}
+@media (max-width:1050px){.stage{grid-template-columns:1fr}.wire{display:none!important}}
+.col{min-width:0}
+.colhead{border-radius:4px 4px 0 0;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.colhead b{font-size:15px;letter-spacing:.08em}
+.colhead small{font-size:12px;opacity:.85}
+.user .colhead{background:var(--blue)}
+.server .colhead{background:var(--dark2)}
+.server .colhead.attacked{background:var(--red)}
+.colbody{background:#fbfcfd;border:1px solid var(--line);border-top:0;border-radius:0 0 4px 4px;padding:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:4px;margin-bottom:12px;transition:opacity .3s, box-shadow .3s}
+.card.wait{opacity:.38}
+.card.now{box-shadow:0 0 0 3px rgba(58,143,214,.35)}
+.card h5{margin:0;padding:10px 14px;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px}
+.card h5 .n{width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:11.5px;flex:none}
+.server .card h5 .n{background:var(--dark)}
+.card h5 small{margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink2)}
+.card .body{padding:12px 14px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:12.5px;margin:0}
+.kv dt{color:var(--ink2)} .kv dd{margin:0;min-width:0}
+.empty{color:var(--ink2);font-size:12.5px}
+select,input[type=text]{font:inherit;font-size:13px;padding:8px 10px;border:1px solid #d2d7de;border-radius:3px;background:#fff;color:var(--ink);min-width:0}
+select:focus,input:focus,button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+button{font:inherit;font-size:13px;cursor:pointer;border-radius:3px;border:1px solid #d2d7de;background:#fff;color:var(--ink);padding:8px 12px}
+button:hover{background:var(--soft)} button:disabled{opacity:.5;cursor:default}
+.btn{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600} .btn:hover{background:var(--blue2)}
+.qrow{display:flex;gap:8px}.qrow input{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chip{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--blueL);border:1px solid #cfe2f4;color:var(--blue2)}
+.chip:hover{background:#d8e9f8}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:650}
+.pill.ok{background:var(--okbg);color:var(--ok)} .pill.bad{background:var(--redbg);color:var(--red)} .pill.na{background:var(--soft);color:var(--ink2)} .pill.warn{background:var(--amberbg);color:#9a6a00}
+.bar{height:6px;background:var(--soft);border-radius:3px;overflow:hidden;margin:6px 0}
+.bar i{display:block;height:100%;background:var(--blue)}
+.big{font-size:22px;font-weight:700}
+.plain{background:var(--blueL);border:1px dashed #a9cbec;border-radius:4px;padding:8px 10px;font-size:13px}
+.arrowdown{text-align:center;color:var(--ink2);font-size:12px;margin:2px 0 8px}
+.cmp{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:4px 0 10px}
+.cmp div{background:var(--soft);border-radius:4px;padding:8px 10px;font-size:12px}
+.cmp div b{display:block;font-size:11px;color:var(--ink2);font-weight:600;margin-bottom:2px}
+.cmp .eq{background:none;padding:0;font-size:12px;font-weight:700}
+.check{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:start;padding:8px 0;border-top:1px solid var(--soft);transition:opacity .25s}
+.check:first-child{border-top:0}
+.check .c{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:700;background:#c9ced6}
+.check.ok .c{background:var(--green)} .check.bad .c{background:var(--red)}
+.check .t{font-weight:650;font-size:13px}
+.check .s{font-size:12px;color:var(--ink2)}
+.check.hide{opacity:.15}
+.verdict{border-radius:4px;text-align:center;color:#fff;padding:14px;margin-bottom:10px}
+.verdict b{display:block;font-size:24px;letter-spacing:.1em}
+.verdict div{font-size:13px}
+.verdict.ok{background:var(--green)} .verdict.bad{background:var(--red)} .verdict.none{background:var(--amber)}
+.file{padding:9px 0;border-top:1px solid var(--soft)} .file:first-child{border-top:0}
+.file b{font-size:13px}
+.attack-on{background:var(--redbg);color:var(--red);border-radius:4px;padding:8px 10px;font-size:12.5px;font-weight:600;margin-top:8px}
+.adv{background:#fff6f6;border:1px solid #f0d0d0;border-radius:4px;padding:10px 12px;margin-bottom:12px}
+.adv .lab{font-size:12px;font-weight:700;color:var(--red);letter-spacing:.03em;margin-bottom:6px}
+.adv .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.adv select{flex:1;min-width:160px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--soft);vertical-align:top}
+th{color:var(--ink2);font-weight:600;font-size:11.5px;white-space:nowrap;background:#fafbfc}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.scroll{max-height:240px;overflow:auto}
+svg.tree text{font-family:var(--mono);font-size:10px;fill:var(--ink2)}
+.legend{font-size:11.5px;color:var(--ink2);margin-top:4px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin:0 4px 0 10px}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid #c3cad5;border-top-color:var(--blue);border-radius:50%;animation:r .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes r{to{transform:rotate(360deg)}}
+
+/* the wire between the two sides */
+.wire{display:flex;flex-direction:column;align-items:center;padding:0 8px;position:relative}
+.anchorbox{width:100%;background:#fff;border:2px solid var(--dark);border-radius:6px;text-align:center;padding:8px 6px;font-size:11.5px;margin-top:2px}
+.anchorbox b{display:block;font-size:12px;letter-spacing:.06em}
+.anchorbox .mono{font-size:10.5px;color:var(--ink2)}
+.vline{width:2px;flex:1;min-height:30px;background:repeating-linear-gradient(180deg,#b9c0ca 0 5px,transparent 5px 9px);margin:6px 0}
+.lane{width:100%;position:relative;height:56px;margin:4px 0}
+.lane .line{position:absolute;left:0;right:0;top:24px;height:2px;background:#b9c0ca}
+.lane.r .line:after,.lane.l .line:after{content:"";position:absolute;top:-5px;border:6px solid transparent}
+.lane.r .line:after{right:-2px;border-left-color:#b9c0ca}
+.lane.l .line:after{left:-2px;border-right-color:#b9c0ca}
+.lane .lbl{position:absolute;left:0;right:0;top:0;text-align:center;font-size:11px;color:var(--ink2)}
+.lane .lbl2{position:absolute;left:0;right:0;top:32px;text-align:center;font-size:11px;color:var(--ink);font-weight:600}
+.packet{position:absolute;top:15px;width:20px;height:20px;border-radius:4px;opacity:0}
+.packet.q{background:var(--blue)} .packet.a{background:var(--dark)}
+.packet.go-r{animation:gor .7s ease-in-out forwards} .packet.go-l{animation:gol .7s ease-in-out forwards}
+@keyframes gor{0%{left:0;opacity:1}100%{left:calc(100% - 20px);opacity:1}}
+@keyframes gol{0%{left:calc(100% - 20px);opacity:1}100%{left:0;opacity:1}}
+.netbox{width:100%;border-radius:6px;text-align:center;padding:8px 6px;font-size:11.5px;background:#fff;border:2px solid #9aa2ad}
+.netbox b{display:block;font-size:12px;letter-spacing:.06em}
+.netbox.bad{border-color:var(--red);background:var(--redbg);color:var(--red)}
+
+/* lower sections */
+.sectitle{display:flex;align-items:center;gap:14px;margin:28px 0 14px;font-weight:700;letter-spacing:.06em;font-size:15px;text-transform:uppercase}
+.sectitle:before,.sectitle:after{content:"";flex:1;height:4px;background:repeating-linear-gradient(90deg,#d6d9de 0 2px,transparent 2px 4px)}
+.sectitle small{font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink2);font-size:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+.vbtns{display:flex;flex-wrap:wrap;gap:6px}
+.feed{max-height:220px;overflow:auto;font-size:12px}
+.feed div{padding:5px 14px;border-bottom:1px solid var(--soft)}
+footer{background:#e2e4e8;border-top:1px solid #d4d7dc;padding:22px 0;color:#5d636c;font-size:12.5px;margin-top:30px}
+footer .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:24px}
+footer h6{margin:0 0 8px;font-size:12px;letter-spacing:.08em;color:var(--ink)}
+footer ul{list-style:none;margin:0;padding:0} footer li{padding:2px 0}
+/* v5: how the server finds keywords (Cuckoo filter -> B+ tree -> posting list) */
+.howto{background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:8px 0;font-size:12.5px}
+.howto b{color:var(--ink)}
+.pipe{display:grid;grid-template-columns:96px 14px 1fr 14px 1fr 14px 1fr;align-items:stretch;gap:0;margin:5px 0}
+.pipe .tok{font-family:var(--mono);font-size:11.5px;align-self:center;word-break:break-all}
+.pipe .ar{align-self:center;text-align:center;color:var(--ink2)}
+.pn{border:1px solid var(--line);border-radius:5px;padding:4px 7px;background:#fff;font-size:11.5px;line-height:1.35}
+.pn b{display:block;font-size:11px;letter-spacing:.03em;color:var(--ink2);font-weight:600}
+.pn.go{border-color:#9cc6ec;background:var(--blueL)}
+.pn.stop{border-color:#ecc76f;background:var(--amberbg)}
+.pn.prove{border-color:#b9d99c;background:var(--okbg)}
+.bpt text{font-size:10px;fill:var(--ink2)}
+/* v5: partition map + split/merge */
+.pmap svg{display:block;width:100%;height:auto}
+.pmap .lg{font-size:12px;color:var(--ink2);margin-top:4px}
+.pmap .lg i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin:0 4px 0 12px}
+.morph{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+.pbox{border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:12px;text-align:center;min-width:110px;background:#fff}
+.pbox .mono{display:block;font-size:11px}
+.pbox .sz{font-size:18px;font-weight:700;display:block}
+.pbox.old{background:var(--soft);color:var(--ink2)}
+.pbox.new{border-color:var(--blue);background:var(--blueL)}
+.pbox .fill{height:5px;background:var(--line);border-radius:3px;margin-top:4px;overflow:hidden}
+.pbox .fill i{display:block;height:100%;background:var(--blue)}
+.morph .op{font-size:20px;color:var(--ink2)}
+.flow{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.flow span{border:1px solid var(--line);border-radius:12px;padding:3px 9px;font-size:12px;background:#fff}
+.flow span.done{border-color:#9fcf95;background:var(--okbg)}
+.flow em{font-style:normal;color:var(--ink2)}
+/* v7: zoom, Merkle, storyboard */
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0 8px}
+.tabs button{border:1px solid var(--line);background:#fff;border-radius:14px;padding:3px 10px;font-size:12px;cursor:pointer}
+.tabs button.on{background:var(--dark2);color:#fff;border-color:var(--dark2)}
+.zoom{display:flex;flex-direction:column;align-items:center;gap:0}
+.znode{border:1px solid var(--line);border-radius:6px;background:#fff;padding:6px 8px;width:100%;max-width:880px}
+.znode .ttl{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--ink2);margin-bottom:4px}
+.zrow{display:flex;gap:2px;flex-wrap:nowrap;overflow:hidden}
+.zrow span{flex:1;min-width:0;height:22px;border-radius:2px;background:#e1e5ea;font:10px/22px var(--mono);text-align:center;color:transparent;overflow:hidden}
+.zrow span.hot{background:var(--blue);color:#fff;flex:0 0 auto;padding:0 6px}
+.zrow span.nb{background:var(--amber);color:#fff;flex:0 0 auto;padding:0 6px}
+.zrow span.gap{background:#fff;border:2px dashed var(--amber);color:var(--amber);flex:0 0 auto;padding:0 6px;line-height:18px}
+.zdown{color:var(--ink2);font-size:12px;padding:3px 0}
+.mk svg,#mk svg{display:block;width:100%;height:auto;max-height:300px}
+.story{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 12px}
+@media (max-width:900px){.story{grid-template-columns:repeat(2,1fr)}}
+.sp{border:1px solid var(--line);border-radius:6px;padding:8px;background:#fff;font-size:12px}
+.sp .h{font-weight:700;font-size:12px;margin-bottom:4px}
+.sp .h i{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--dark2);color:#fff;font-size:11px;margin-right:5px}
+.pmap .sp svg,.sp svg{display:block;margin:4px auto;width:auto;max-width:100%;height:auto}
+.sp .t{color:var(--ink2);line-height:1.4}
+/* v8: one tabbed "How it works" panel */
+.hiwbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:10px}
+.hiwbar .tabs{margin:0}
+.hiwbar .lbl{font-size:12px;color:var(--ink2);margin-right:4px}
+#hiwtabs button{font-size:13px;padding:5px 14px}
+.hiw h6{font-size:12px;letter-spacing:.04em;color:var(--ink2);margin:14px 0 6px;font-weight:700}
+.hiw h6:first-child{margin-top:0}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap nav">
+  <div class="logo"><div class="mark">A</div><div><b>AMTP</b><small>VERIFIABLE SEARCH DEMO</small></div></div>
+  <nav><a href="#stage">Live search</a><a href="#howitworks">How it works</a><a href="#proven">What was proven</a><a href="#updates">Updates</a><a href="#history">History</a></nav>
+</div></header>
+<div class="titlebar"><div class="wrap">
+  <div><h1>VERIFIABLE SEARCH <span id="titlecount"></span></h1><div class="sub" id="gamma">live demo on the real code and the real dataset</div></div>
+  <div class="stats" id="stats"></div>
+</div></div>
+<div class="strip"><div class="wrap" id="standins"></div></div>
+<div id="loading"><div class="wrap" id="loadtext"><span class="spin"></span>Loading…</div></div>
+
+<!-- step tracker -->
+<div class="tracker"><div class="wrap" id="tracker">
+  <span class="tstep" data-s="1"><i>1</i>User sends query</span><span class="tsep">›</span>
+  <span class="tstep" data-s="2"><i>2</i>Server receives</span><span class="tsep">›</span>
+  <span class="tstep" data-s="3"><i>3</i>Server searches</span><span class="tsep">›</span>
+  <span class="tstep" data-s="4"><i>4</i>Server builds proof</span><span class="tsep">›</span>
+  <span class="tstep" data-s="5"><i>5</i>User verifies proof</span><span class="tsep">›</span>
+  <span class="tstep" data-s="6"><i>6</i>Result</span>
+  <span class="opts"><label><input type="checkbox" id="animate" checked> play step by step</label><button id="replay" disabled>Replay</button></span>
+</div></div>
+
+<div class="wrap">
+<div class="stage" id="stage">
+  <!-- ======================= DATA USER ======================= -->
+  <div class="col user">
+    <div class="colhead"><b>DATA USER</b><small>client :8102 · holds K_s, K_a, attribute keys</small></div>
+    <div class="colbody">
+      <div class="card"><div class="body">
+        <div class="qrow">
+          <select id="domain" aria-label="Domain"></select>
+          <input type="text" id="q" placeholder='keyword, or "a phrase" AND (x OR y)' aria-label="Query">
+          <button class="btn" id="go">Search</button>
+        </div>
+        <div class="chips" id="examples"></div>
+        <div class="small muted" id="lang" style="margin-top:8px"></div>
+      </div></div>
+
+      <div class="card wait" id="u1"><h5><span class="n">1</span>Query sent <small>what leaves the user</small></h5><div class="body" id="u-send"><div class="empty">Search to see what the user sends.</div></div></div>
+
+      <div class="card wait" id="u5"><h5><span class="n">5</span>Verification <small>user side · checks the proof</small></h5><div class="body" id="u-verify"><div class="empty">The user checks the server's proof here.</div></div></div>
+
+      <div class="card wait" id="u6"><h5><span class="n">6</span>Result <small>decrypted only if accepted</small></h5><div class="body" id="u-result"><div class="empty">No search yet.</div></div></div>
+    </div>
+  </div>
+
+  <!-- ======================= THE WIRE ======================= -->
+  <div class="wire">
+    <div class="anchorbox"><b>ROOT ANCHOR</b>:8103 · simulated blockchain<div class="mono" id="w-anchor">stores (e*, R_D)</div></div>
+    <div class="vline"></div>
+    <div class="small muted" style="text-align:center">user reads the trusted root here</div>
+    <div class="vline"></div>
+    <div class="lane r"><div class="lbl">① query</div><div class="line"></div><div class="lbl2" id="w-q">token</div><div class="packet q" id="pq"></div></div>
+    <div class="netbox" id="w-net"><b>NETWORK PATH</b>:8104<div id="w-netmode">forwards unchanged</div></div>
+    <div class="lane l"><div class="lbl">④ answer + proof</div><div class="line"></div><div class="lbl2" id="w-a">response</div><div class="packet a" id="pa"></div></div>
+    <div class="vline"></div>
+  </div>
+
+  <!-- ======================= CLOUD SERVER ======================= -->
+  <div class="col server">
+    <div class="colhead" id="srvhead"><b>CLOUD SERVER</b><small id="wsstate">connecting…</small></div>
+    <div class="colbody">
+      <div class="adv">
+        <div class="lab">ADVERSARY CONTROLS · the user is never told</div>
+        <div class="row"><span class="small" style="width:110px">Server behaviour</span><select id="attack"></select></div>
+        <div class="row" style="margin-top:6px"><span class="small" style="width:110px">Network path</span><select id="mitm"></select></div>
+        <div class="row" style="margin-top:8px"><button id="restore">Restore tampered stored data</button><span class="small muted" id="tampered"></span></div>
+        <div id="attackstate"></div>
+      </div>
+
+      <div class="card wait" id="s2"><h5><span class="n">2</span>Query received <small>what the server sees</small></h5><div class="body" id="s-recv"><div class="empty">Waiting for a query. Filled from the server's own event stream.</div></div></div>
+      <div class="card wait" id="s3"><h5><span class="n">3</span>Search <small>index lookup + Boolean evaluation</small></h5><div class="body" id="s-search"><div class="empty">—</div></div></div>
+      <div class="card wait" id="s4"><h5><span class="n">4</span>Proof built <small>server side · sent with the answer</small></h5><div class="body" id="s-proof"><div class="empty">—</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= WHAT WAS PROVEN ======================= -->
+<div class="sectitle" id="howitworks">How it works <small>inside the server and the proof · one domain at a time</small></div>
+<div class="card hiw pmap" id="pmapcard"><div class="body">
+  <div class="hiwbar">
+    <div class="tabs" id="hiwtabs"><button data-hiw="tree" class="on">B+ search tree</button><button data-hiw="merkle">Merkle proof</button><button data-hiw="sm">Split &amp; merge</button></div>
+    <div class="tabs"><span class="lbl">Domain</span><span id="hiwdom"></span></div>
+  </div>
+  <div id="hiw-tree">
+    <h6 id="st-title">B+ SEARCH TREE</h6><div id="st"><div class="empty">Search to see where each keyword lands in the tree.</div></div>
+    <h6>ZOOM: ONE LOOKUP, NODE BY NODE</h6><div id="stzoom"><div class="empty">After a search.</div></div>
+  </div>
+  <div id="hiw-merkle" hidden><h6 id="mk-title">MERKLE TREES IN THIS ANSWER</h6><div id="mk"><div class="empty">Search to see the Merkle trees and which hashes the proof contains.</div></div></div>
+  <div id="hiw-sm" hidden><h6>PARTITION MAP · one bar per partition, height = live files</h6>
+  <div class="tabs" id="storytabs"><button data-story="split" class="on">How a SPLIT works</button><button data-story="merge">How a MERGE works</button></div>
+  <div id="story"></div>
+  <div id="pmap"><div class="empty">Loading the layout…</div></div>
+  <div id="morph"></div>
+</div>
+</div></div>
+
+<div class="sectitle" id="proven">What was proven <small>the same proof, seen from both sides</small></div>
+<div class="grid2">
+  <div class="card"><h5>Evidence per keyword <small id="ev-note"></small></h5><div class="scroll" id="p-evidence"><div class="body empty">After a search.</div></div></div>
+  <div class="card"><h5>Partitions in the proof</h5><div class="scroll" id="p-parts"><div class="body empty">After a search.</div></div></div>
+</div>
+<div class="grid2">
+  <div class="card"><h5>What the proof cost</h5><div class="body" id="p-cost"><div class="empty">After a search.</div></div></div>
+  <div class="card"><h5>Global Root R_G <small>audit value only</small></h5><div class="body" id="audit">—</div></div>
+</div>
+
+<!-- ======================= UPDATES ======================= -->
+<div class="sectitle" id="updates">Data Owner · updates <small>full update protocol every time</small></div>
+<div class="grid2">
+  <div class="card"><h5>Update the data <small>signed request → server prepares → owner validates → Root Anchor → finalize</small></h5><div class="body">
+    <div class="vbtns">
+      <button data-own="insert">Insert 1 real file</button>
+      <button data-own="delete">Delete the last inserted file</button>
+      <button data-own="split">Insert until a partition splits (θ_max = 64)</button>
+      <button data-own="merge">Delete until a partition merges (θ_min = 16)</button>
+      <button id="reverify">Check my previous response against today's anchored root</button>
+    </div>
+    <div id="owner" class="small" style="margin-top:10px"></div>
+  </div></div>
+  <div class="card"><h5>Domains on the server</h5><div id="domains" class="scroll"></div></div>
+</div>
+<div class="card"><h5>Server event log</h5><div class="feed" id="feed"></div></div>
+
+<div class="sectitle" id="history">This session's searches <small>every number is measured on this run</small></div>
+<div class="card"><div class="scroll" style="max-height:300px"><table id="hist"><thead><tr>
+  <th>#</th><th>Query</th><th>Domains</th><th class="num">Keywords</th><th class="num">Partitions touched</th><th class="num">Files</th>
+  <th class="num">Token ms</th><th class="num">Server ms</th><th class="num">Verify ms</th><th class="num">Proof bytes</th><th class="num">Hashes checked</th><th>Verdict</th>
+</tr></thead><tbody></tbody></table></div></div>
+</div>
+
+<footer><div class="wrap cols">
+  <div><div class="logo" style="margin-bottom:8px"><div class="mark">A</div><div><b>AMTP</b><small>VERIFIABLE SEARCH DEMO</small></div></div>
+    Every answer is proven correct, complete and fresh against the root anchored for its domain. The step-by-step playback only paces the display; all times shown are measured.</div>
+  <div><h6>PROCESSES</h6><ul><li>Data User + Owner :8102</li><li>Cloud Server :8101</li><li>Root Anchor :8103</li><li>Network path :8104</li></ul></div>
+  <div><h6>STAND-INS</h6><ul id="footstand"><li>—</li></ul></div>
+</div></footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = n => n == null ? "—" : Number(n).toLocaleString("en-US");
+// partitions of one keyword's evidence; a pruned keyword (AND pruning, focus evidence) sends only the partitions
+// inside the focus set, plus the neighbouring γ leaves that prove it is absent from the other focus partitions
+const evParts = x => x.pruned ? `${num(x.partitions)} of ${num(x.of)}<div class="small muted">pruned · ${num(x.neighbours)} neighbour γ</div>` : num(x.partitions);
+const evPill = x => x.pruned ? ` <span class="pill na" title="AND pruning: only the part of this keyword's posting list that the other keywords allow is sent">pruned</span>` : "";
+const ms = v => v == null ? "—" : (v < 10 ? v.toFixed(3) : v < 100 ? v.toFixed(2) : v.toFixed(1)) + " ms";
+const hx = (s, n = 16) => s ? `<span class="mono" title="${esc(s)}">${esc(String(s).slice(0, n))}…</span>` : "—";
+const kb = b => b == null ? "—" : b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(2) + " MB";
+const sleep = t => new Promise(r => setTimeout(r, t));
+let ST = null, OUT = null, RUN = null, EV = null, PLAY = 0, DSTATS = {}, HR = null, HDOM = null;
+let ATK = {mode: "honest", label: "Honest server"}, MITM = {mode: "off", label: "Forward unchanged"};
+
+async function api(url, body) {
+  const r = await fetch(url, body === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.detail || r.statusText);
+  return j;
+}
+
+// ------------------------------------------------------------------ start-up
+async function boot() {
+  ST = await api("/api/status");
+  $("#gamma").textContent = ST.config.gamma + " · θ_max " + ST.config.theta_max + " / θ_min " + ST.config.theta_min;
+  $("#standins").innerHTML = "<b>Stand-ins in this demo:</b> " + ST.stand_ins.map(s => `<span title="${esc(s.note)}"><b>${esc(s.paper)}</b> → ${esc(s.demo)}</span>`).join("");
+  $("#footstand").innerHTML = ST.stand_ins.map(s => `<li>${esc(s.paper)} → ${esc(s.demo)}</li>`).join("");
+  $("#lang").textContent = "Query language: " + ST.query_language;
+  if (ST.error) { $("#loadtext").innerHTML = "Start-up failed: " + esc(ST.error); return; }
+  if (!ST.ready) {
+    $("#loadtext").innerHTML = '<span class="spin"></span>Loading the real dataset (bulk path): ' + ST.config.domains.map(d => `<b>${d}</b> ${esc(ST.progress[d] || "waiting")}`).join(" · ");
+    setTimeout(boot, 700); return;
+  }
+  const su = ST.startup;
+  $("#loadtext").innerHTML = `Start-up used the <b>bulk path</b> and took <b>${(su.total_ms / 1000).toFixed(1)} s</b> (reading the dataset file ${(su.read_dataset_ms / 1000).toFixed(1)} s; per domain: ` +
+    ST.config.domains.map(d => `${d} encrypt ${(su[d].encrypt_ms/1000).toFixed(1)} s, index ${(su[d].owner_index_ms/1000).toFixed(1)} s`).join("; ") + `). <span class="muted">${esc(su.path)}</span>`;
+  $("#domain").innerHTML = ST.config.domains.map(d => `<option value="${d}">${d}</option>`).join("") + `<option value="*">All domains</option>`;
+  $("#domain").onchange = () => { examples(); anchorBox(); };
+  examples(); connect(); operator(); refreshDomains(); audit(); history(); anchorBox(); hiwDomain(ST.config.domains[0]); story("split");
+  $("#stats").title = ST.dataset.name;
+}
+function examples() {
+  const d = $("#domain").value === "*" ? ST.config.domains[0] : $("#domain").value;
+  $("#examples").innerHTML = (ST.examples[d] || []).map((e, i) => `<button class="chip" data-ex="${i}" title="${esc(e.query)}">${esc(e.label)} <small>· ${esc(e.why)}</small></button>`).join("");
+  $$("[data-ex]").forEach(b => b.onclick = () => { $("#q").value = ST.examples[d][b.dataset.ex].query; search(); });
+}
+async function anchorBox() {
+  try { const a = await api("/api/audit"); const d = $("#domain").value === "*" ? ST.config.domains[0] : $("#domain").value;
+    const v = a.domains[d]; if (v) $("#w-anchor").innerHTML = `${esc(d)} · epoch ${v.epoch}<br>R_D ${esc(v.R_D.slice(0, 10))}…`; } catch (e) {}
+}
+
+// ------------------------------------------------------------------ steps and playback
+const CARDS = {1: ["#u1"], 2: ["#s2"], 3: ["#s3"], 4: ["#s4"], 5: ["#u5"], 6: ["#u6"]};
+function setStep(n, state) {
+  const t = $(`.tstep[data-s="${n}"]`); t.classList.remove("active", "done", "fail"); if (state) t.classList.add(state);
+  (CARDS[n] || []).forEach(c => { $(c).classList.toggle("wait", !state); $(c).classList.toggle("now", state === "active"); });
+}
+function resetSteps() { for (let i = 1; i <= 6; i++) setStep(i, null); $$(".check").forEach(c => c.classList.add("hide")); }
+function packet(id, cls) { const p = $(id); p.classList.remove("go-r", "go-l"); void p.offsetWidth; p.classList.add(cls); }
+
+async function play() {
+  const me = ++PLAY, anim = $("#animate").checked, wait = t => anim ? sleep(t) : Promise.resolve();
+  const r = RUN, failed = r.verdict !== "VERIFIED", noAns = r.verdict === "NO ANSWER";
+  resetSteps();
+  const go = (n, st) => { if (me === PLAY) setStep(n, st); };
+  go(1, "active"); renderSend(); if (anim) packet("#pq", "go-r"); await wait(800); go(1, "done");
+  go(2, "active"); await wait(650); go(2, EV && EV.status === "rejected" ? "fail" : "done");
+  go(3, "active"); await wait(650); go(3, noAns ? "fail" : "done");
+  go(4, "active"); await wait(650); go(4, noAns ? "fail" : "done");
+  if (anim && !noAns) packet("#pa", "go-l"); await wait(800);
+  go(5, "active"); renderVerify();
+  const rows = $$(".check");
+  for (const c of rows) { if (me !== PLAY) return; c.classList.remove("hide"); await wait(220); }
+  go(5, noAns ? "fail" : failed ? "fail" : "done");
+  go(6, failed ? "fail" : "done"); renderResult();
+  $("#replay").disabled = false;
+}
+
+// ------------------------------------------------------------------ search
+async function search() {
+  const query = $("#q").value.trim(); if (!query || !ST?.ready) return;
+  const domains = $("#domain").value === "*" ? ST.config.domains : [$("#domain").value];
+  $("#go").disabled = true; resetSteps(); setStep(1, "active");
+  $("#u-send").innerHTML = '<span class="spin"></span>Sending…';
+  $("#s-recv").innerHTML = '<div class="empty"><span class="spin"></span>Waiting for the server…</div>';
+  $("#s-search").innerHTML = $("#s-proof").innerHTML = '<div class="empty">—</div>';
+  try {
+    OUT = await api("/api/search", {query, domains});
+    RUN = OUT.runs.find(r => r.verdict !== "VERIFIED") || OUT.runs[0];
+    wireLabels(); renderProven(); hiwDomain(OUT.runs.slice().sort((a, b) => (b.result_count || 0) - (a.result_count || 0))[0].domain); renderAudit(OUT.audit); history(); anchorBox();
+    document.getElementById("stage").scrollIntoView({behavior: "smooth"});
+    await play();
+  } catch (e) {
+    $("#u-send").innerHTML = `<span class="pill warn">QUERY NOT SENT</span> ${esc(e.message)}`; setStep(1, "fail");
+  }
+  $("#go").disabled = false;
+}
+$("#replay").onclick = () => RUN && play();
+
+function wireLabels() {
+  const r = RUN;
+  $("#w-q").textContent = `${num(r.sizes.token_bytes)} B token`;
+  $("#w-a").textContent = r.verdict === "NO ANSWER" ? "no answer" : `${kb(r.sizes.wire_bytes_in)}`;
+}
+
+// ------------------------------------------------------------------ user side
+function renderSend() {
+  const r = RUN, st = k => r.steps.find(s => s.key === k) || {};
+  const words = r.proof ? r.proof.evidence.map(e => esc(e.word)).join(", ") : esc(OUT.summary.query);
+  const toks = r.proof ? r.proof.evidence.map(e => esc(e.h.slice(0, 10)) + "…").join(" ") : "—";
+  $("#u-send").innerHTML = `
+    <div class="small muted">The user types (stays on this computer):</div>
+    <div class="plain">${esc(OUT.summary.query)}</div>
+    <div class="arrowdown">↓ read the trusted root from the Root Anchor · turn each keyword into a secret token</div>
+    <dl class="kv">
+      <dt>Trusted root read</dt><dd>epoch ${r.anchored.epoch}, R_D ${hx(r.anchored.R_D, 16)} <span class="muted">${ms(st("anchor").ms)}</span></dd>
+      <dt>Keywords → tokens</dt><dd>${words} → <span class="mono">${toks}</span></dd>
+      <dt>What is sent</dt><dd>${esc(st("token").note)} <span class="muted">${ms(st("token").ms)}</span></dd>
+      <dt>Domain</dt><dd>${esc(r.domain)}${OUT.runs.length > 1 ? ` <span class="muted">(one query per domain: ${OUT.runs.map(x => x.domain).join(", ")})</span>` : ""}</dd>
+    </dl>`;
+}
+function renderVerify() {
+  const r = RUN, p = r.proof, a = r.anchored;
+  if (!p) { $("#u-verify").innerHTML = `<div class="empty">Nothing to verify: ${esc(r.reason)}</div>`; return; }
+  const same = p.rebuilt_R_D === a.R_D;
+  $("#u-verify").innerHTML = `
+    <div class="small muted" style="margin-bottom:4px">The user rebuilds the root from the server's proof and compares it with the root from the Root Anchor:</div>
+    <div class="cmp"><div><b>FROM THE PROOF (rebuilt)</b>${hx(p.rebuilt_R_D, 18)}</div><span class="eq pill ${same ? "ok" : "bad"}">${same ? "= equal" : "≠ different"}</span><div><b>FROM THE ROOT ANCHOR</b>${hx(a.R_D, 18)} <span class="muted">e${a.epoch}</span></div></div>
+    <div>` + r.checks.map((c, i) => {
+      const st = c.ok === true ? "ok" : c.ok === false ? "bad" : "na";
+      return `<div class="check ${st} hide"><span class="c">${c.ok === true ? "✓" : c.ok === false ? "✕" : i + 1}</span>
+        <div><div class="t">${i + 1}. ${esc(c.label)}</div><div class="s">${esc(c.meaning)}</div><div class="small">${esc(c.detail)}</div></div>
+        <span class="pill ${st}">${c.ok === true ? "PASS" : c.ok === false ? "FAIL" : "not run"}</span></div>`;
+    }).join("") + `</div>
+    <div class="small muted" style="margin-top:8px">${num(p.hashes_checked)} hashes computed by the user · verify ${ms(r.timing.verify_ms)}</div>`;
+}
+function renderResult() {
+  const s = OUT.summary, r = RUN, cls = s.verdict === "VERIFIED" ? "ok" : s.verdict === "REJECTED" ? "bad" : "none";
+  const why = OUT.runs.map(x => (OUT.runs.length > 1 ? x.domain + ": " : "") + (x.verdict === "VERIFIED" ? `${x.result_count} file(s), ` : "") + x.reason).join(" · ");
+  const all = OUT.runs.flatMap(x => x.results.map(y => ({...y, domain: x.domain})));
+  const dec = r.steps.find(x => x.key === "decrypt");
+  let h = `<div class="verdict ${cls}"><b>${esc(s.verdict)}</b><div>${esc(why)}</div></div>`;
+  const files = OUT.runs.flatMap(x => (x.files || x.results).map(y => ({...y, domain: x.domain})));
+  if (s.verdict !== "VERIFIED") h += `<div class="empty">Nothing is decrypted or shown: the response was not accepted.</div>`;
+  else if (files.length === 0) h += `<div class="empty">No file matches. The empty result is proven (see "What was proven" below).</div>`;
+  else {
+    h += `<div class="small" style="margin:2px 0 6px"><b>All ${num(files.length)} returned file(s)</b>, decrypted ${dec && dec.ms != null ? "in " + ms(dec.ms) : ""}:</div>
+      <div class="scroll" style="max-height:260px;border:1px solid var(--line);border-radius:4px"><table><thead><tr>
+      <th class="num">#</th><th>Document ID</th><th>Title (decrypted)</th>${OUT.runs.length > 1 ? "<th>Domain</th>" : ""}<th>Partition · slot</th><th>cid</th><th>Status</th></tr></thead><tbody>` +
+      files.map((x, i) => `<tr><td class="num">${i + 1}</td><td class="mono" style="white-space:nowrap">${esc(x.doc)}</td><td>${esc(x.title || "—")}</td>${OUT.runs.length > 1 ? `<td>${esc(x.domain)}</td>` : ""}
+        <td class="mono" style="white-space:nowrap">${esc(String(x.pid).slice(0, 8))} · ${x.loc}</td><td class="mono" style="white-space:nowrap">${x.cid ? esc(x.cid.slice(0, 8)) + "…" : "—"}</td>
+        <td><span class="pill ${x.status === "open" ? "ok" : x.status === "locked" ? "warn" : "bad"}">${x.status === "open" ? "decrypted" : esc(x.status)}</span></td></tr>`).join("") + `</tbody></table></div>`;
+    h += `<div class="small muted" style="margin:10px 0 2px">Preview of the first ${Math.min(all.length, 5)}:</div>` + all.slice(0, 5).map(x => `<div class="file"><b>${esc(x.title || x.doc)}</b>
+        <div class="small muted">${esc(x.domain)} · ${esc(x.doc)} · partition ${esc(String(x.pid).slice(0, 8))} slot ${x.loc}</div>
+        <div class="small">${esc((x.snippet || "").slice(0, 170))}…</div></div>`).join("");
+  }
+  h += `<div class="small muted" style="margin-top:8px">Network: ${ms(r.timing.network_ms)} between the processes · server worked ${ms(r.timing.server_ms_reported)} · JSON ${ms(r.timing.serialize_ms)}</div>`;
+  $("#u-result").innerHTML = h;
+}
+
+// ------------------------------------------------------------------ server side (from the server's own event stream)
+function connect() {
+  const open = (url, on, label) => {
+    const ws = new WebSocket(url.replace(/^http/, "ws") + "/ws");
+    ws.onopen = () => { if (label) $("#wsstate").textContent = ":8101 · live event stream connected"; };
+    ws.onmessage = m => on(JSON.parse(m.data));
+    ws.onclose = () => { if (label) $("#wsstate").textContent = ":8101 · reconnecting"; setTimeout(() => open(url, on, label), 1500); };
+  };
+  open(ST.urls.server, serverEvent, true);
+  open(ST.urls.network, e => { if (e.kind === "forwarded") log(`network path: ${e.what} (${num(e.bytes)} bytes)`); });
+  open(ST.urls.anchor, e => { if (e.kind === "anchored") { log(`Root Anchor accepted ${e.domain} epoch ${e.epoch}: R_D ${e.R_D.slice(0, 12)}… (block ${e.block})`); audit(); anchorBox(); } });
+}
+function log(t) { const d = document.createElement("div"); d.textContent = new Date().toLocaleTimeString() + "  " + t; $("#feed").prepend(d); }
+function serverEvent(e) {
+  if (e.kind === "query") { EV = e; renderServer(e); log(`query on ${e.domain}: ${e.status}${e.results != null ? ", " + e.results + " file(s)" : ""}, ${e.timing.total_ms} ms` + (e.attack.mode !== "honest" ? ` · attack: ${e.attack.what || e.attack.label}` : "")); }
+  else if (e.kind === "update_prepared") log(`update ${e.domain} → epoch ${e.epoch_new}: ${e.ops.length} op(s), ${e.stats.partitions_changed} partition(s) changed, ${e.stats.splits} split, ${e.stats.merges} merge, ${num(e.stats.keys_refreshed)} keys re-committed, ${e.prepare_ms} ms`);
+  else if (e.kind === "update_finalized") { log(`update ${e.domain} finalized: epoch ${e.epoch}, ${e.partitions} partitions, ${num(e.files)} files`); refreshDomains(); }
+  else if (e.kind === "update_aborted") log(`update ${e.domain} aborted, rolled back`);
+  else if (e.kind === "attack_mode") log(`server behaviour: ${e.label}`);
+  else if (e.kind === "restored") { log(`restored ${e.count} tampered item(s)`); operator(); }
+  else if (e.kind === "bulk_loaded") refreshDomains();
+}
+function tree(e) {
+  const t = e.tree, n = e.partitions, touched = new Set(t.touched_pos), W = 360, cols = Math.min(n, n > 400 ? 60 : n > 150 ? 40 : 24);
+  const shown = Math.min(n, 1500), cell = Math.max(4, Math.floor((W - 4) / cols) - 1), rows = Math.ceil(shown / cols), top = 96;
+  let s = `<svg class="tree" viewBox="0 0 ${W} ${top + rows * (cell + 1) + 14}" width="100%" role="img" aria-label="Proof path">
+    <rect x="130" y="4" width="100" height="22" rx="5" fill="#2d3136"/><text x="180" y="19" text-anchor="middle" style="fill:#fff">R_D  e${t.epoch}</text>
+    <line x1="180" y1="26" x2="90" y2="44" stroke="#8a94a6"/><line x1="180" y1="26" x2="270" y2="44" stroke="#8a94a6"/>
+    <rect x="40" y="44" width="100" height="22" rx="5" fill="#3a8fd6"/><text x="90" y="59" text-anchor="middle" style="fill:#fff">R^part</text>
+    <rect x="220" y="44" width="100" height="22" rx="5" fill="#7cb342"/><text x="270" y="59" text-anchor="middle" style="fill:#fff">R^idx</text>
+    <text x="222" y="80">IMT: ${num(t.imt_leaves)} leaves</text>
+    <text x="4" y="80">partition roots A = H(PID‖v‖R_P)</text><line x1="90" y1="66" x2="90" y2="${top - 6}" stroke="#8a94a6"/>`;
+  for (let i = 0; i < shown; i++) {
+    const x = 2 + (i % cols) * (cell + 1), y = top + Math.floor(i / cols) * (cell + 1);
+    s += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="1" fill="${touched.has(i) ? "#3a8fd6" : "#e1e5ea"}"/>`;
+  }
+  return s + `</svg><div class="legend"><span class="sw" style="background:#3a8fd6;margin-left:0"></span>in the proof (${num(e.touched)})
+    <span class="sw" style="background:#e1e5ea"></span>not touched (${num(n - e.touched)})${n > shown ? ` · first ${shown} of ${num(n)} drawn` : ""}</div>`;
+}
+const TOKC = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"];
+function treeLevels(keys) {            // B+ tree of order 64, bulk-loaded: ≤ 63 keys per leaf, ≤ 64 children per inner node
+  const B = 64; let n = Math.ceil(keys / (B - 1)), lv = [n];
+  while (n > 1) { n = Math.ceil(n / B); lv.unshift(n); }
+  return lv;
+}
+// ---------- zoom on one B+ tree lookup
+function hex8(x) { return Math.min(0xffffffff, Math.max(0, Math.floor(x * 4294967296))).toString(16).padStart(8, "0"); }
+function renderZoom(k) {
+  const r = HR || RUN, keys = (DSTATS[r.domain] || {}).keys;
+  if (!r.proof || !keys || !r.proof.evidence.length) { $("#stzoom").innerHTML = `<div class="empty">After a search.</div>`; return; }
+  const ev = r.proof.evidence.slice(0, 6), t = ev[k], lv = treeLevels(keys), v = parseInt(t.h.slice(0, 8), 16) / 4294967296;
+  let h = `<div class="tabs">` + ev.map((x, i) => `<button data-zk="${i}" class="${i === k ? "on" : ""}">${esc(x.word)}</button>`).join("") + `</div><div class="zoom">`;
+  let lo = 0, hi = 1;
+  lv.forEach((c, li) => {
+    const leaf = li === lv.length - 1, idx = Math.min(c - 1, Math.floor(v * c));
+    const kids = leaf ? Math.max(1, Math.round(keys / c)) : (li === lv.length - 2 ? Math.round(lv[li + 1] / c) : Math.round(lv[li + 1] / c));
+    const nlo = idx / c, nhi = (idx + 1) / c;
+    const pos = Math.min(kids - 1, Math.floor((v - nlo) / (nhi - nlo) * kids));
+    let cells = "";
+    if (!leaf) {
+      for (let i = 0; i < kids; i++) cells += i === pos ? `<span class="hot">child ${i + 1} of ${kids} · keys ≈ ${hex8(nlo + (nhi - nlo) * i / kids).slice(0, 4)}…–${hex8(nlo + (nhi - nlo) * (i + 1) / kids).slice(0, 4)}…</span>` : `<span></span>`;
+    } else if (t.status === "present") {
+      for (let i = 0; i < kids; i++) cells += i === pos ? `<span class="hot">${esc(t.h.slice(0, 10))}… ✓ found → posting list</span>` : `<span></span>`;
+    } else {
+      const b = t.bracket || {};
+      for (let i = 0; i < kids; i++) {
+        if (i === pos - 1 || false) cells += `<span class="nb">h_lo ${esc(String(b.lo || "").slice(0, 8))}…</span>`;
+        else if (i === pos) cells += `<span class="gap">${esc(t.h.slice(0, 8))}… would be here: missing</span><span class="nb">next ${esc(String(b.next || "").slice(0, 8))}…</span>`;
+        else cells += `<span></span>`;
+      }
+    }
+    h += `<div class="znode"><div class="ttl">${li === 0 ? "ROOT NODE" : leaf ? "LEAF NODE" : "INNER NODE"} · level ${li + 1} of ${lv.length} · ${leaf ? `≈ ${kids} keys in this leaf (max 63)` : `${kids} child pointers (max 64)`} · covers keys ≈ ${hex8(nlo).slice(0, 6)}… – ${hex8(nhi).slice(0, 6)}…</div><div class="zrow">${cells}</div></div>`;
+    if (!leaf) h += `<div class="zdown">↓ compare h_w = ${esc(t.h.slice(0, 8))}… with the separator keys, follow the matching child</div>`;
+  });
+  h += `</div><div class="small muted" style="margin-top:6px">${t.status === "present"
+      ? `Found after reading ${lv.length} node(s). The leaf entry points to the posting list: ${num(t.entries)} slot(s) in ${num(t.partitions)} partition(s).`
+      : `Not in the tree. The leaf still holds the two neighbour keys <b>h_lo</b> and <b>next(h_lo)</b> (real values from the proof). The server proves h_lo &lt; h_w &lt; next(h_lo) with the IMT, which shows nothing is stored in between.`}
+    Node sizes and key ranges are estimated from the key count; the searched key and its neighbours are the real values.</div>`;
+  $("#stzoom").innerHTML = h;
+  $$("[data-zk]").forEach(b => b.onclick = () => renderZoom(+b.dataset.zk));
+}
+// ---------- Merkle trees
+function merkleSvg(n, targets, o = {}) {
+  let size = 1; while (size < Math.max(n, 1)) size *= 2;
+  const depth = Math.log2(size), W = 1000, top = o.top || 34, rowH = Math.min(46, (o.h || 300) / Math.max(depth, 1));
+  const path = [new Set(targets.filter(i => i < size))];
+  for (let d = 1; d <= depth; d++) path.push(new Set([...path[d - 1]].map(i => i >> 1)));
+  const sib = []; for (let d = 0; d < depth; d++) sib.push(new Set([...path[d]].map(i => i ^ 1).filter(i => !path[d].has(i))));
+  const X = (d, i) => 20 + (W - 40) * (i + 0.5) / (size >> d), Y = d => top + (depth - d) * rowH;
+  let s = "", nSib = 0;
+  for (let d = 1; d <= depth; d++) for (let i = 0; i < size >> d; i++) {
+    const on = path[d].has(i);
+    s += `<line x1="${X(d, i)}" y1="${Y(d)}" x2="${X(d - 1, 2 * i)}" y2="${Y(d - 1)}" stroke="${on && path[d - 1].has(2 * i) ? "#2a78d6" : "#d5dae0"}" stroke-width="${on && path[d - 1].has(2 * i) ? 2 : 1}"/>
+          <line x1="${X(d, i)}" y1="${Y(d)}" x2="${X(d - 1, 2 * i + 1)}" y2="${Y(d - 1)}" stroke="${on && path[d - 1].has(2 * i + 1) ? "#2a78d6" : "#d5dae0"}" stroke-width="${on && path[d - 1].has(2 * i + 1) ? 2 : 1}"/>`;
+  }
+  for (let d = 0; d <= depth; d++) for (let i = 0; i < size >> d; i++) {
+    const rr = Math.max(2, Math.min(7, (W - 40) / (size >> d) / 2.6)), pad = d === 0 && i >= n;
+    let fill = "#e1e5ea", stroke = "none", dash = "";
+    if (path[d].has(i)) fill = d === 0 ? "#184f95" : "#2a78d6";
+    else if (d < depth && sib[d].has(i)) { fill = "#eb6834"; nSib++; }
+    if (pad && !(d < depth && sib[d].has(i))) { fill = "#fff"; stroke = "#c9ced5"; dash = 'stroke-dasharray="2 2"'; }
+    s += `<circle cx="${X(d, i)}" cy="${Y(d)}" r="${rr}" fill="${fill}" stroke="${stroke}" ${dash}><title>${d === 0 ? (pad ? "padding leaf" : `${o.leaf || "leaf"} ${i}`) : `node level ${d}, index ${i}`}${path[d].has(i) ? " · recomputed by the user" : d < depth && sib[d].has(i) ? " · hash sent in the proof" : ""}</title></circle>`;
+  }
+  s += `<text x="${X(depth, 0) + 14}" y="${Y(depth) + 4}" font-size="13" font-weight="700" fill="#22262c">${o.root || "root"}</text>`;
+  return {svg: s, nSib, size, depth, H: Y(0) + 16};
+}
+function renderMerkle(k) {
+  const r = HR || RUN, p = r.proof;
+  if (!p) { $("#mk").innerHTML = `<div class="empty">No answer, so no proof: ${esc(r.reason)}</div>`; return; }
+  $("#mk-title").innerHTML = `Merkle trees in this answer · ${esc(r.domain)} <small>blue = rebuilt by the user · orange = hashes sent in the proof · grey = never needed</small>`;
+  const files = r.files || r.results || [];
+  const legend = `<div class="lg small muted" style="margin:4px 0 8px"><span class="sw" style="background:#184f95;margin-left:0"></span>leaf in the proof <span class="sw" style="background:#2a78d6"></span>node the user recomputes <span class="sw" style="background:#eb6834"></span>sibling hash the server sends <span class="sw" style="background:#e1e5ea"></span>not needed <span class="sw" style="background:#fff;border:1px dashed #c9ced5"></span>padding (tree is filled up to a power of 2)</div>`;
+  // (1) domain level: R_D over R^part (Merkle over partition roots) and R^idx (IMT)
+  const dom = merkleSvg(p.partitions_total, p.partitions.map(d => d.pos), {root: "R^part", leaf: "partition", h: 140, top: 92});
+  let h = `<div class="howto"><b>Level 1 · the domain.</b> R_D = H(i ‖ e ‖ R^part ‖ R^idx). R^part is a Merkle tree over all ${num(p.partitions_total)} partitions (leaf = A = H(PID ‖ v ‖ R_P)).
+      This answer touches ${num(p.partitions_touched)} partition(s), so the user recomputes only the blue path and needs just the orange sibling hashes, not all ${num(p.partitions_total)} leaves.</div>
+    <svg viewBox="0 0 1000 ${dom.H}" role="img" aria-label="Domain Merkle tree">
+      <rect x="380" y="4" width="240" height="26" rx="5" fill="#2d3136"/><text x="500" y="22" text-anchor="middle" font-size="13" fill="#fff">R_D (anchored)  epoch ${r.anchored.epoch}</text>
+      <line x1="500" y1="30" x2="500" y2="${92 - 12}" stroke="#2a78d6" stroke-width="2"/><line x1="560" y1="30" x2="820" y2="56" stroke="#7cb342" stroke-width="2"/>
+      <rect x="760" y="56" width="200" height="24" rx="5" fill="#7cb342"/><text x="860" y="72" text-anchor="middle" font-size="12" fill="#fff">R^idx · IMT, ${num(p.imt_leaves)} leaves</text>
+      ${dom.svg}</svg>
+    <div class="small muted">Drawn: ${num(dom.nSib)} sibling hash(es) for the drawn path; the real domain multiproof in this answer has ${num(p.domain_proof_hashes)} hash(es). R^idx is checked the same way with the IMT proof for each keyword.</div>${legend}`;
+  // (2) partition level
+  if (p.partitions.length) {
+    const ps = p.partitions.slice(0, 6), d = ps[Math.min(k, ps.length - 1)], same = x => String(x.pid).startsWith(String(d.pid).slice(0, 8)) || String(d.pid).startsWith(String(x.pid).slice(0, 8));
+    const locs = files.filter(same).map(x => x.loc), pt = merkleSvg(d.n_slots, locs, {root: "R_P", leaf: "slot", h: 120, top: 30});
+    h += `<div class="howto" style="margin-top:14px"><b>Level 2 · inside one partition.</b> Each partition has its own Merkle tree over its ${d.n_slots} slot(s); its root R_P goes into the partition leaf above.
+        Dark blue leaves = the returned files in this partition (slots ${locs.length ? locs.join(", ") : "—"}).</div>
+      <div class="tabs">` + ps.map((x, i) => `<button data-mk="${i}" class="${x === d ? "on" : ""}">partition ${esc(String(x.pid).slice(0, 8))} · pos ${x.pos}</button>`).join("") + `</div>
+      <svg viewBox="0 0 1000 ${pt.H}" role="img" aria-label="Partition Merkle tree">${pt.svg}</svg>
+      <div class="small muted">${pt.size > d.n_slots ? `${d.n_slots} slots padded to ${pt.size}. ` : ""}Drawn for the returned files only: ${num(pt.nSib)} sibling hash(es). The server's real slot proof for this partition has ${d.proof_hashes} hash(es), because it covers every posting entry of every keyword, not only the final result.</div>`;
+  } else h += `<div class="empty" style="margin-top:10px">No partition in this proof: every keyword was proven absent, so only R^idx (the IMT) is used.</div>`;
+  $("#mk").innerHTML = h;
+  $$("[data-mk]").forEach(b => b.onclick = () => renderMerkle(+b.dataset.mk));
+}
+// ---------- split / merge storyboard
+function grid(n, cap, cols, colorFn) {
+  const c = 11, g = 2, rows = Math.ceil(Math.max(n, cap) / cols), W = cols * (c + g), H = rows * (c + g);
+  let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  for (let i = 0; i < Math.max(n, cap); i++) s += `<rect x="${(i % cols) * (c + g)}" y="${Math.floor(i / cols) * (c + g)}" width="${c}" height="${c}" rx="1.5" fill="${i < n ? colorFn(i) : "#fff"}" stroke="${i < n ? "none" : "#d5dae0"}"/>`;
+  return s + "</svg>";
+}
+function tri(label, color) {
+  return `<svg width="90" height="56" viewBox="0 0 90 56"><path d="M45 6 L82 46 L8 46 Z" fill="${color}" opacity=".18" stroke="${color}"/><circle cx="45" cy="8" r="5" fill="${color}"/><text x="45" y="40" text-anchor="middle" font-size="10" fill="#22262c">${label}</text></svg>`;
+}
+function storyData(r, before, after) {
+  const st = r.epochs.filter(e => e.ok).flatMap(e => e.structure)[0]; if (!st) return null;
+  const sz = (L, pid) => L && L.by[pid] ? L.by[pid].live : null;
+  if (st[0] === "split") { const a = sz(after, st[2]), b = sz(after, st[3]); return a && b ? {pid: st[1], L: a, R: b} : null; }
+  const m = sz(after, st[3]), pa = sz(before, st[2]); return m && pa != null && m - pa >= 1 && m <= ST.config.theta_max ? {pid: st[1], partner: st[2], small: m - pa, other: pa, M: m} : null;
+}
+function story(kind, d) {
+  $$("[data-story]").forEach(b => b.classList.toggle("on", b.dataset.story === kind));
+  const tmax = ST.config.theta_max, tmin = ST.config.theta_min, real = !!d;
+  let h;
+  if (kind === "split") {
+    d = d || {pid: "P", L: Math.ceil((tmax + 1) / 2), R: Math.floor((tmax + 1) / 2)};
+    const n = d.L + d.R, pid = esc(String(d.pid).slice(0, 8));
+    h = `<div class="sp"><div class="h"><i>1</i>A partition is full</div>${grid(n - 1, tmax, 8, () => "#2a78d6")}<div class="t">Partition ${pid} holds ${n - 1} files (θ_max = ${tmax}). Every slot is a leaf of its Merkle tree.</div></div>
+      <div class="sp"><div class="h"><i>2</i>The owner inserts one more</div>${grid(n, tmax, 8, i => i === n - 1 ? "#d9534f" : "#2a78d6")}<div class="t">${n} &gt; θ_max, so the server's policy must split it in the same update (red = the new file).</div></div>
+      <div class="sp"><div class="h"><i>3</i>Cut into two halves</div><div style="display:flex;gap:8px;justify-content:center">${grid(d.L, 0, 6, () => "#2a78d6")}${grid(d.R, 0, 6, () => "#1baf7a")}</div><div class="t">Two contiguous halves (${d.L} + ${d.R}, differ by at most 1). Both get fresh PIDs and version v = 0; the old partition is retired.</div></div>
+      <div class="sp"><div class="h"><i>4</i>New roots, new anchor</div><div style="display:flex;justify-content:center">${tri("R_P left", "#2a78d6")}${tri("R_P right", "#1baf7a")}</div><div class="t">Each half gets its own Merkle tree → R^part is recomputed → new R_D. The owner validates it and the Root Anchor stores the new R_D.</div></div>`;
+  } else {
+    d = d || {pid: "P", partner: "Q", small: tmin - 1, other: 30, M: tmin - 1 + 30};
+    const pid = esc(String(d.pid).slice(0, 8)), q = esc(String(d.partner).slice(0, 8));
+    h = `<div class="sp"><div class="h"><i>1</i>A partition gets too small</div>${grid(d.small, 0, 8, () => "#e3a21a")}<div class="t">After deletes, partition ${pid} has ${d.small} file(s) &lt; θ_min = ${tmin}. Small partitions waste proof hashes.</div></div>
+      <div class="sp"><div class="h"><i>2</i>Find a partner</div><div style="display:flex;gap:8px;justify-content:center">${grid(d.small, 0, 6, () => "#e3a21a")}${grid(d.other, 0, 6, () => "#2a78d6")}</div><div class="t">Partner ${q} has ${d.other}; together ${d.small + d.other} ≤ θ_max = ${tmax}, so they fit in one partition.</div></div>
+      <div class="sp"><div class="h"><i>3</i>Join them</div>${grid(d.M, 0, 8, i => i < d.small ? "#e3a21a" : "#2a78d6")}<div class="t">Live entries are concatenated (in PID order) into one fresh partition with ${d.M} file(s), v = 0. Both old partitions are retired.</div></div>
+      <div class="sp"><div class="h"><i>4</i>New root, new anchor</div><div style="display:flex;justify-content:center">${tri("R_P merged", "#2a78d6")}</div><div class="t">One new Merkle tree replaces two → R^part is recomputed → new R_D. The owner validates it and the Root Anchor stores the new R_D.</div></div>`;
+  }
+  $("#story").innerHTML = `<div class="small muted">${real ? "Real sizes from the update you just ran." : "Example with the paper's thresholds. Click the split / merge buttons below to see it with real sizes."} Each square is one file slot.</div><div class="story">${h}</div>`;
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-story]"); if (b) story(b.dataset.story); });
+function renderSearchTree() {
+  const r = HR || RUN, keys = (DSTATS[r.domain] || {}).keys;
+  $("#st-title").innerHTML = `B+ Search Tree of ${esc(r.domain)} <small>order 64 · one tree per domain · built over the protected keys h_w, never over keyword text</small>`;
+  if (!r.proof || !keys) { $("#st").innerHTML = `<div class="empty">${r.proof ? "Key count not loaded yet." : "No answer, so no lookup to show: " + esc(r.reason)}</div>`; return; }
+  const lv = treeLevels(keys), toks = r.proof.evidence.slice(0, 6), W = 1000, L = 120, R = W - 10, rowH = 42, top = 14;
+  const q = h => parseInt(String(h).slice(0, 8), 16) / 4294967296;     // keys are hashes kept in sorted order: position ≈ value
+  let s = `<svg viewBox="0 0 ${W} ${top + lv.length * rowH + 16}" width="100%" role="img" aria-label="B+ Search Tree">`;
+  const xs = (c, i) => L + (R - L) * (i + 0.5) / c;
+  lv.forEach((c, li) => {
+    const y = top + li * rowH, name = li === 0 ? "root" : li === lv.length - 1 ? "leaves" : "inner nodes";
+    s += `<text x="${L - 10}" y="${y + 12}" text-anchor="end" font-size="12" fill="#22262c" font-weight="600">${name}</text>
+          <text x="${L - 10}" y="${y + 27}" text-anchor="end" font-size="11" fill="#737b87">${num(c)} node${c > 1 ? "s" : ""}</text>`;
+    if (c <= 48) {
+      const w = Math.min(60, (R - L) / c - 4);
+      for (let i = 0; i < c; i++) s += `<rect x="${xs(c, i) - w / 2}" y="${y}" width="${w}" height="20" rx="3" fill="#e1e5ea"/>`;
+    } else {
+      s += `<rect x="${L}" y="${y}" width="${R - L}" height="20" rx="3" fill="#e1e5ea"/>`;
+      const step = Math.max(1, Math.ceil(c / 100));
+      for (let i = step; i < c; i += step) { const x = L + (R - L) * i / c; s += `<line x1="${x}" x2="${x}" y1="${y}" y2="${y + 20}" stroke="#fff" stroke-width="1"/>`; }
+    }
+  });
+  toks.forEach((t, k) => {
+    const col = TOKC[k % TOKC.length], v = q(t.h), absent = t.status !== "present";
+    let px = null;
+    lv.forEach((c, li) => {
+      const y = top + li * rowH, i = Math.min(c - 1, Math.floor(v * c)), x = c <= 48 ? xs(c, i) : L + (R - L) * (i + 0.5) / c;
+      if (px) s += `<line x1="${px[0]}" y1="${px[1]}" x2="${x}" y2="${y}" stroke="${col}" stroke-width="2" ${absent ? 'stroke-dasharray="5 4"' : ""}/>`;
+      s += `<circle cx="${x}" cy="${y + 10}" r="6" fill="${absent ? "#fff" : col}" stroke="${col}" stroke-width="2"/>`;
+      px = [x, y + 20];
+    });
+  });
+  s += `<text x="${L}" y="${top + lv.length * rowH + 8}" font-size="11" fill="#737b87">smallest key ←  leaves are linked left to right in key order  → largest key</text></svg>`;
+  const nl = lv[lv.length - 1];
+  const rows = toks.map((t, k) => `<tr><td><span class="sw" style="background:${TOKC[k % TOKC.length]};margin-left:0"></span> ${esc(t.word)}</td><td>${hx(t.h, 10)}</td>
+      <td><span class="pill ${t.status === "present" ? "ok" : "warn"}">${t.status === "present" ? "found in a leaf" : "not in the tree"}</span></td>
+      <td class="num">≈ ${num(Math.min(nl, Math.floor(q(t.h) * nl) + 1))} of ${num(nl)}</td><td class="num">${lv.length}</td>
+      <td class="small">${t.status === "present" ? `posting list: ${num(t.entries)} slot(s) in ${num(t.partitions)} partition(s)` : "the leaf gives the neighbour keys h_lo &lt; h_w &lt; next(h_lo) → IMT proof of absence"}</td></tr>`).join("");
+  $("#st").innerHTML = `<div class="howto"><b>What this is.</b> The server keeps every keyword key h_w of ${esc(r.domain)} (${num(keys)} keys) sorted in a B+ tree.
+      To find a key it reads one node per level, from the root down to a leaf: only <b>${lv.length} node read(s)</b> per keyword instead of scanning ${num(keys)} keys.
+      A found leaf holds the key's <b>posting list</b> (which partitions and slots contain it). For a missing key the leaf still helps: it gives the two neighbour keys the server needs for the <b>non-membership proof</b>.
+      The user never trusts this tree; the Merkle proofs and the 7 checks do that.</div>
+    ${s}
+    <div class="scroll" style="max-height:220px;margin-top:6px"><table><thead><tr><th>Keyword (user only)</th><th>Key h_w (server sees)</th><th>In the tree?</th><th class="num">Leaf</th><th class="num">Nodes read</th><th>What the leaf gives</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${r.proof.evidence.length > 6 ? `<div class="small muted">First 6 of ${r.proof.evidence.length} keywords drawn.</div>` : ""}
+    <div class="small muted" style="margin-top:6px">Level sizes are computed from this domain's real key count (order 64, ≤ 63 keys per leaf). Keys are hash values stored in sorted order, so each keyword's leaf is placed by its key value: the position is an estimate, not read from the live tree.
+      <b>Node split:</b> when the owner adds a new keyword to a full leaf (63 keys), that leaf splits in two and its parent gets one more pointer — the same idea as a partition split, but inside the index.</div>`;
+}
+function bptree(keys, found) {
+  // Sketch of the real B+ Search Tree shape: order 64 (≤ 63 keys per leaf); level sizes computed from this domain's key count.
+  const B = 64; let n = Math.ceil(keys / (B - 1)), levels = [n];
+  while (n > 1) { n = Math.ceil(n / B); levels.unshift(n); }
+  const W = 360, rowH = 30, H = levels.length * rowH + 8;
+  let s = `<svg class="bpt" viewBox="0 0 ${W} ${H}" width="100%" style="margin-top:8px" role="img" aria-label="B+ tree">`, px = null;
+  levels.forEach((c, li) => {
+    const show = Math.min(c, 7), y = 4 + li * rowH, w = 30, gap = 6, total = show * w + (show - 1) * gap + (c > 7 ? 22 : 0), x0 = 150 - total / 2;
+    const hot = Math.floor(show / 2);
+    for (let k = 0; k < show; k++) {
+      const x = x0 + k * (w + gap) + (c > 7 && k >= 4 ? 22 : 0);
+      if (c > 7 && k === 4) s += `<text x="${x - 18}" y="${y + 13}">…</text>`;
+      const on = k === hot && found;
+      s += `<rect x="${x}" y="${y}" width="${w}" height="16" rx="3" fill="${on ? "#3a8fd6" : "#e1e5ea"}"/>`;
+      if (on) { if (px) s += `<line x1="${px[0]}" y1="${px[1]}" x2="${x + w / 2}" y2="${y}" stroke="#3a8fd6" stroke-width="1.5"/>`; px = [x + w / 2, y + 16]; }
+    }
+    s += `<text x="${W - 4}" y="${y + 12}" text-anchor="end">${li === 0 ? "root" : li === levels.length - 1 ? num(c) + " leaves" : num(c) + " inner nodes"}</text>`;
+  });
+  return s + `</svg><div class="small muted">B+ Search Tree of ${num(keys)} keyword keys: ${levels.length} level(s), so every lookup reads only ${levels.length} node(s)${found ? " (blue path)" : ""}. Shape computed from the key count; leaves are linked for the "neighbour" lookup of absent keys.</div>`;
+}
+const curDomain = () => HDOM || ($("#domain").value === "*" ? ST.config.domains[0] : $("#domain").value);
+function hiwTab(t) {
+  ["tree", "merkle", "sm"].forEach(k => { $("#hiw-" + k).hidden = k !== t; });
+  $$("[data-hiw]").forEach(b => b.classList.toggle("on", b.dataset.hiw === t));
+}
+function hiwDomain(d) {
+  HDOM = d;
+  HR = OUT ? OUT.runs.find(x => x.domain === d) || null : null;
+  $("#hiwdom").innerHTML = ST.config.domains.map(x => {
+    const run = OUT && OUT.runs.find(y => y.domain === x);
+    return `<button data-hd="${esc(x)}" class="${x === d ? "on" : ""}">${esc(x)}${run ? ` · ${num(run.result_count || 0)} file(s)` : ""}</button>`;
+  }).join("");
+  $$("[data-hd]").forEach(b => b.onclick = () => hiwDomain(b.dataset.hd));
+  if (HR) { renderSearchTree(); renderZoom(0); renderMerkle(0); }
+  else {
+    $("#st").innerHTML = $("#stzoom").innerHTML = `<div class="empty">${OUT ? "This domain was not part of the last search." : "Search to see the tree."}</div>`;
+    $("#mk").innerHTML = `<div class="empty">${OUT ? "This domain was not part of the last search." : "Search to see the Merkle trees."}</div>`;
+  }
+  pmap();
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-hiw]"); if (b) hiwTab(b.dataset.hiw); });
+async function layout(domain) {
+  const L = await api(ST.urls.server + "/layout/" + domain), m = {};
+  L.partitions.forEach(p => m[p.pid] = p); return {list: L.partitions, by: m};
+}
+async function pmap(hl = {}) {
+  const d = curDomain();
+  try { const L = await layout(d); drawMap(d, L, hl); return L; }
+  catch (e) { $("#pmap").innerHTML = `<div class="empty">Layout not available: ${esc(e.message)}</div>`; return null; }
+}
+function drawMap(d, L, hl) {
+  const tmax = ST.config.theta_max, tmin = ST.config.theta_min;
+  const ps = L.list.slice().sort((a, b) => (a.buckets[0] ?? 0) - (b.buckets[0] ?? 0) || b.live - a.live);
+  const n = ps.length, W = 1000, top = 10, base = 130, ymax = Math.max(tmax + 8, ...ps.map(p => p.live)), sc = (base - top) / ymax;
+  const bw = Math.max(2, Math.min(24, Math.floor((W - 80) / Math.max(n, 1)) - 1));
+  let s = `<svg viewBox="0 0 ${W} ${base + 22}" role="img" aria-label="Partition sizes of ${esc(d)}">`;
+  const yl = v => base - v * sc;
+  s += `<line x1="70" x2="${W}" y1="${yl(tmax)}" y2="${yl(tmax)}" stroke="#d9534f" stroke-dasharray="5 4"/><text x="64" y="${yl(tmax) + 4}" text-anchor="end" font-size="11" fill="#d9534f">θ_max ${tmax}</text>`;
+  s += `<line x1="70" x2="${W}" y1="${yl(tmin)}" y2="${yl(tmin)}" stroke="#e3a21a" stroke-dasharray="5 4"/><text x="64" y="${yl(tmin) + 4}" text-anchor="end" font-size="11" fill="#b07a00">θ_min ${tmin}</text>`;
+  s += `<line x1="70" x2="${W}" y1="${base}" y2="${base}" stroke="#c9ced5"/>`;
+  let prevB = null;
+  ps.forEach((p, i) => {
+    const x = 74 + i * (bw + 1), h = Math.max(1, p.live * sc), on = hl[p.pid];
+    if (prevB !== null && p.buckets[0] !== prevB) s += `<line x1="${x - 1}" x2="${x - 1}" y1="${base}" y2="${base + 6}" stroke="#aab2bd"/>`;
+    prevB = p.buckets[0];
+    s += `<rect x="${x}" y="${base - h}" width="${bw}" height="${h}" rx="1.5" fill="${on ? "#2a78d6" : "#b8c4d3"}"><title>partition ${esc(p.pid.slice(0, 8))} · ${p.live} live file(s) · ${p.slots} slot(s) · version v=${p.v} · group(s) ${p.buckets.join(",")}${on ? " · " + on : ""}</title></rect>`;
+  });
+  s += `<text x="74" y="${base + 18}" font-size="11" fill="#737b87">${num(n)} partitions of ${esc(d)}, grouped by placement group (ticks) · hover a bar for details</text></svg>`;
+  const sizes = ps.map(p => p.live), nh = Object.keys(hl).length;
+  $("#pmap").innerHTML = s + `<div class="lg">largest ${Math.max(...sizes)} · smallest ${Math.min(...sizes)} files
+    <i style="background:#b8c4d3"></i>partition<i style="background:#2a78d6"></i>${nh ? "created by the last split/merge" : "new after a split/merge"}
+    <i style="background:none;border-top:2px dashed #d9534f;height:0;border-radius:0"></i>split above this <i style="background:none;border-top:2px dashed #e3a21a;height:0;border-radius:0"></i>merge candidates below this</div>`;
+}
+function pbox(pid, size, cls, note) {
+  const tmax = ST.config.theta_max;
+  return `<div class="pbox ${cls}"><span class="mono">${esc(String(pid).slice(0, 8))}</span><span class="sz">${size ?? "?"}</span>files${note ? `<div class="small muted">${note}</div>` : ""}
+    <div class="fill"><i style="width:${Math.min(100, 100 * (size || 0) / tmax)}%"></i></div></div>`;
+}
+function renderMorph(r, before, after) {
+  const structs = r.epochs.filter(e => e.ok).flatMap(e => e.structure);
+  if (!structs.length) { $("#morph").innerHTML = ""; return {}; }
+  const hl = {}, sz = (L, pid) => L && L.by[pid] ? L.by[pid].live : null;
+  const html = structs.map(st => {
+    if (st[0] === "split") {
+      hl[st[2]] = "new half of " + st[1].slice(0, 8); hl[st[3]] = "new half of " + st[1].slice(0, 8);
+      const a2 = sz(after, st[2]), a3 = sz(after, st[3]), atSplit = a2 != null && a3 != null ? a2 + a3 : null;
+      return `<div class="morph"><b style="width:60px">SPLIT</b>${pbox(st[1], atSplit, "old", atSplit != null ? `had ${atSplit} files when it split (θ_max = ${ST.config.theta_max})` : `new files pushed it past θ_max ${ST.config.theta_max}`)}<span class="op">→</span>
+        ${pbox(st[2], sz(after, st[2]), "new", "new partition")}<span class="op">+</span>${pbox(st[3], sz(after, st[3]), "new", "new partition")}
+        <div class="small muted" style="flex:1;min-width:200px">The full partition is cut in two. Each half gets its own Merkle tree and root R_P, so R^part and the Domain Root R_D change and the owner anchors the new R_D.</div></div>`;
+    }
+    hl[st[3]] = "merged from " + st[1].slice(0, 8) + " + " + st[2].slice(0, 8);
+    return `<div class="morph"><b style="width:60px">MERGE</b>${pbox(st[1], sz(before, st[1]), "old", `size before the deletes; deletes took it below θ_min ${ST.config.theta_min}`)}<span class="op">+</span>
+      ${pbox(st[2], sz(before, st[2]), "old", "partner")}<span class="op">→</span>${pbox(st[3], sz(after, st[3]), "new", "new partition")}
+      <div class="small muted" style="flex:1;min-width:200px">A too-small partition joins a partner (together ≤ θ_max). One new Merkle tree replaces two, and the owner anchors the new R_D.</div></div>`;
+  });
+  $("#morph").innerHTML = `<div class="small muted" style="margin-top:8px">Grey boxes: partitions before this update. Blue boxes: the new partitions after it.</div>` + html.slice(0, 3).join("")
+    + (html.length > 3 ? `<div class="small muted">… and ${html.length - 3} more</div>` : "");
+  return hl;
+}
+function renderServer(e) {
+  const a = e.attack, p = e.timing.phase_ms || {};
+  $("#s-recv").innerHTML = `<dl class="kv">
+    <dt>Query as the server sees it</dt><dd class="mono">${esc(e.token.B_Q.slice(0, 200))}${e.token.B_Q.length > 200 ? "…" : ""}</dd>
+    <dt>Keys</dt><dd>${e.token.keys} opaque 32-byte key(s), ${e.token.bytes} bytes — <b>no keyword text, no K_s</b></dd>
+    <dt>Tag τ_Q</dt><dd class="mono">${esc(e.token.tau)}</dd>
+    <dt>Admission</dt><dd>${e.status === "rejected" ? `<span class="pill bad">refused</span> ${esc(e.reason)}` : `<span class="pill ok">admitted</span> tag, timestamp, nonce and epoch ${e.token.epoch} are valid`} ${p.lookup != null ? `<span class="muted">${ms(e.timing.admission_ms)}</span>` : ""}</dd></dl>
+    ${a.mode !== "honest" ? `<div class="attack-on">Attack active: ${esc(a.label)}<div class="small" style="font-weight:400">${a.applied ? esc(a.what) : "not applied: " + esc(a.what)}</div></div>` : ""}`;
+  if (e.status !== "ok") {
+    $("#s-search").innerHTML = `<span class="pill warn">${esc(e.status)}</span> ${esc(e.reason || "")}`;
+    $("#s-proof").innerHTML = `<div class="empty">No proof: the server returned no answer. Total ${ms(e.timing.total_ms)}.</div>`; return;
+  }
+  const pct = 100 * e.touched / e.partitions, keys = (DSTATS[e.domain] || {}).keys;
+  $("#s-search").innerHTML = `<div><span class="big">${num(e.results)}</span> matching encrypted file(s) found
+      ${p.lookup != null ? `<span class="muted small">· lookup ${ms(p.lookup)} · Boolean evaluation ${ms(p.eval)} · fetch files ${ms(p.fetch)}</span>` : ""}</div>
+    <div class="howto"><b>Per token:</b> Cuckoo filter ("definitely not here"?) → B+ Search Tree → posting list, or an IMT proof if absent. These only make the server fast; the user trusts the proof, not them. Details: <a href="#howitworks">How it works</a>.</div>
+    ${e.evidence.slice(0, 3).map(x => x.status === "present" ? `<div class="pipe"><span class="tok">${esc(x.h)}</span><span class="ar">→</span>
+        <div class="pn go"><b>CUCKOO FILTER</b>maybe here → check the tree</div><span class="ar">→</span>
+        <div class="pn go"><b>B+ SEARCH TREE</b>found in a leaf</div><span class="ar">→</span>
+        <div class="pn prove"><b>POSTING LIST</b>${num(x.entries)} file slot(s) in ${num(x.partitions)} partition(s)</div></div>`
+      : `<div class="pipe"><span class="tok">${esc(x.h)}</span><span class="ar">→</span>
+        <div class="pn stop"><b>CUCKOO FILTER / TREE</b>not indexed</div><span class="ar">→</span>
+        <div class="pn stop"><b>B+ SEARCH TREE</b>gives the neighbour keys h_lo &lt; h &lt; next</div><span class="ar">→</span>
+        <div class="pn prove"><b>IMT PROOF</b>proves the keyword is absent</div></div>`).join("")}
+    ${e.evidence.length > 3 ? `<div class="small muted">… and ${e.evidence.length - 3} more token(s): see "What was proven".</div>` : ""}
+    <div class="small" style="margin-top:8px"><b>${num(e.touched)}</b> of ${num(e.partitions)} partitions touched (${pct.toFixed(1)}%), <b>${num(e.partitions - e.touched)}</b> skipped · ${num(e.files)} files in ${esc(e.domain)}</div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <div class="scroll" style="max-height:120px"><table><thead><tr><th>Token</th><th>Found</th><th class="num">Partitions</th><th class="num">Entries</th></tr></thead><tbody>` +
+    e.evidence.slice(0, 24).map(x => `<tr><td class="mono">${esc(x.h)}</td><td><span class="pill ${x.status === "present" ? "ok" : "warn"}">${esc(x.status)}</span>${evPill(x)}</td><td class="num">${evParts(x)}</td><td class="num">${num(x.entries)}</td></tr>`).join("") + `</tbody></table></div>`;
+  $("#s-proof").innerHTML = `${tree(e)}
+    <dl class="kv" style="margin-top:8px">
+      <dt>Proof size</dt><dd><b>${kb(e.proof_bytes)}</b> · whole response ${kb(e.response_bytes)}</dd>
+      <dt>Contains</dt><dd>index evidence per keyword, partition proofs, one domain multiproof of ${e.tree.domain_proof_hashes} hash(es)</dd>
+      <dt>Roots sent</dt><dd>R^part ${hx(e.tree.R_part, 10)} · R^idx ${hx(e.tree.R_idx, 10)}</dd>
+      <dt>Server time</dt><dd>${p.proof != null ? `proof construction ${ms(p.proof)} · ` : ""}<b>total ${ms(e.timing.total_ms)}</b> · ${num(e.hash_calls)} hashes${p.lookup == null ? ` <span class="muted">(no per-step split while an attack is active)</span>` : ""}</dd></dl>`;
+}
+
+// ------------------------------------------------------------------ what was proven
+function renderProven() {
+  const r = RUN, p = r.proof;
+  if (!p) { ["#p-evidence", "#p-parts", "#p-cost"].forEach(s => $(s).innerHTML = `<div class="body empty">${esc(r.reason)}</div>`); return; }
+  $("#ev-note").textContent = p.evidence_total > p.evidence.length ? `first ${p.evidence.length} of ${p.evidence_total}` : "";
+  $("#p-evidence").innerHTML = `<table><thead><tr><th>Keyword (user only)</th><th>Token (server sees)</th><th>Status</th><th class="num">Partitions</th><th class="num">Entries</th><th class="num">Tree path</th></tr></thead><tbody>` +
+    p.evidence.map(e => `<tr><td>${esc(e.word)}</td><td>${hx(e.h, 10)}</td>
+      <td><span class="pill ${e.status === "present" ? "ok" : e.status === "absent" ? "warn" : "bad"}">${esc(e.status)}</span>${evPill(e)}${e.bracket ? `<div class="small muted">proven absent: ${hx(e.bracket.lo, 8)} &lt; h_w &lt; ${hx(e.bracket.next, 8)}</div>` : ""}</td>
+      <td class="num">${evParts(e)}</td><td class="num">${num(e.entries)}</td><td class="num" title="${esc((e.siblings || []).join(" "))}">${e.proof_hashes} hashes</td></tr>`).join("") + `</tbody></table>`;
+  $("#p-parts").innerHTML = p.partitions.length ? `<table><thead><tr><th>PID</th><th class="num">Version v</th><th>Root R_P</th><th class="num">Slots</th><th class="num">Position</th><th class="num">Slot proof</th></tr></thead><tbody>` +
+    p.partitions.map(d => `<tr><td class="mono">${esc(String(d.pid).slice(0, 10))}</td><td class="num">${d.v}</td><td>${hx(d.R_P, 10)}</td><td class="num">${d.n_slots}</td><td class="num">${d.pos}</td><td class="num">${d.proof_hashes} hashes</td></tr>`).join("") + `</tbody></table>`
+    : `<div class="body empty">No partition: every keyword was proven absent.</div>`;
+  const pct = p.partitions_total ? 100 * p.partitions_touched / p.partitions_total : 0, vp = r.timing.verify_phase_ms || {};
+  $("#p-cost").innerHTML = `<dl class="kv">
+    <dt>Proof size</dt><dd><b>${kb(p.proof_bytes)}</b> <span class="muted">(${num(p.proof_bytes)} bytes; whole response ${kb(p.response_bytes)}, ${num(p.files_returned)} file(s))</span></dd>
+    <dt>Hashes the user computed</dt><dd><b>${num(p.hashes_checked)}</b></dd>
+    <dt>Partitions in the proof</dt><dd><b>${num(p.partitions_touched)}</b> of ${num(p.partitions_total)} (${pct.toFixed(1)}%)<div class="bar"><i style="width:${pct}%"></i></div></dd>
+    <dt>Index tree</dt><dd>${num(p.imt_leaves)} leaves; ${num(p.domain_proof_hashes)} hash(es) in the domain multiproof</dd>
+    <dt>Verify time per stage</dt><dd>context + anchor + index ${ms(vp.idx)} · PAPC ${ms(vp.papc)} · partitions ${ms(vp.part)} · Boolean ${ms(vp.comp)} · ciphertexts ${ms(vp.ct)}</dd></dl>`;
+}
+function renderAudit(a) {
+  $("#audit").innerHTML = `<dl class="kv"><dt>Anchor reports</dt><dd>${hx(a.reported_R_G, 32)}</dd>
+    <dt>User recomputes</dt><dd>${hx(a.recomputed_R_G, 32)} <span class="pill ${a.match ? "ok" : "bad"}">${a.match ? "equal" : "different"}</span></dd>
+    <dt>From</dt><dd>${Object.entries(a.domains).map(([d, v]) => `${d} e${v.epoch} ${esc(v.R_D.slice(0, 8))}…`).join(" · ")}</dd></dl>
+    <div class="small muted" style="margin-top:6px">R_G is an ${esc(a.note)}. It is not part of the verdict.</div>`;
+}
+async function audit() { try { renderAudit(await api("/api/audit")); } catch (e) {} }
+
+// ------------------------------------------------------------------ adversary controls
+async function operator() {
+  const a = await api(ST.urls.server + "/attack"), m = await api(ST.urls.network + "/mitm");
+  ATK = {mode: a.mode, label: a.label}; MITM = {mode: m.mode, label: m.label};
+  const groups = [["Honest", ["honest"]], ["Omission (5a)", ["drop_result", "hide_posting", "false_absent"]], ["Forgery / injection (5b)", ["extra_result", "forge_partition", "tamper_ct"]],
+    ["Wrong partition / domain (5c)", ["wrong_partition", "wrong_domain"]], ["Old root / replay (5d)", ["stale", "replay"]],
+    ["Tamper stored data (4)", ["tamper_store_ct", "tamper_store_index"]], ["Storage failure", ["storage_loss"]]];
+  if (document.activeElement !== $("#attack"))
+    $("#attack").innerHTML = groups.map(([g, ks]) => `<optgroup label="${g}">` + ks.filter(k => a.modes[k]).map(k => `<option value="${k}" ${k === a.mode ? "selected" : ""}>${esc(a.modes[k])}</option>`).join("") + `</optgroup>`).join("");
+  if (document.activeElement !== $("#mitm"))
+    $("#mitm").innerHTML = Object.entries(m.modes).map(([k, v]) => `<option value="${k}" ${k === m.mode ? "selected" : ""}>${k === "off" ? "" : "Man in the middle (5e): "}${esc(v)}</option>`).join("");
+  const t = a.tampered, n = t.ciphertexts.length + t.index_entries.length;
+  $("#tampered").textContent = n ? `${t.ciphertexts.length} stored file(s) and ${t.index_entries.length} index entr(ies) are tampered` : "stored data is intact";
+  const sBad = a.mode !== "honest", nBad = m.mode !== "off";
+  $("#attackstate").innerHTML = sBad || nBad ? `<div class="attack-on">ATTACK ACTIVE · ${esc([sBad ? "Server: " + a.label : "", nBad ? "Network: " + m.label : ""].filter(Boolean).join(" · "))}</div>` : "";
+  $("#srvhead").classList.toggle("attacked", sBad);
+  $("#w-net").classList.toggle("bad", nBad);
+  $("#w-netmode").textContent = nBad ? "ATTACK: " + m.label : "forwards unchanged";
+}
+$("#attack").onchange = async e => { await api(ST.urls.server + "/attack", {mode: e.target.value}); e.target.blur(); operator(); };
+$("#mitm").onchange = async e => { await api(ST.urls.network + "/mitm", {mode: e.target.value}); log("network path: " + e.target.selectedOptions[0].textContent); e.target.blur(); operator(); };
+$("#restore").onclick = async () => { await api(ST.urls.server + "/attack/restore", {}); operator(); };
+setInterval(() => { if (ST?.ready) operator().catch(() => {}); }, 4000);
+
+// ------------------------------------------------------------------ domains, owner, history
+async function refreshDomains() {
+  try {
+    const s = await api(ST.urls.server + "/stats"), d = s.domains, ks = Object.keys(d); DSTATS = d;
+    $("#domains").innerHTML = `<table><thead><tr><th>Domain</th><th class="num">Epoch</th><th class="num">Files</th><th class="num">Partitions</th><th class="num">Largest</th><th class="num">Keywords</th><th>R_D</th></tr></thead><tbody>` +
+      ks.map(k => `<tr><td>${k}</td><td class="num">${d[k].epoch}</td><td class="num">${num(d[k].files)}</td><td class="num">${num(d[k].partitions)}</td><td class="num">${d[k].max_partition}</td><td class="num">${num(d[k].keys)}</td><td>${hx(d[k].R_D, 10)}</td></tr>`).join("") + `</tbody></table>`;
+    const sum = f => ks.reduce((a, k) => a + d[k][f], 0);
+    $("#titlecount").textContent = `(${num(sum("files"))} encrypted files)`;
+    $("#stats").innerHTML = `<div class="stat"><b>${ks.length}</b>domains</div><div class="stat"><b>${num(sum("files"))}</b>files</div><div class="stat"><b>${num(sum("keys"))}</b>keywords</div><div class="stat"><b>${num(sum("partitions"))}</b>partitions</div><div class="stat"><b>arXiv</b>dataset-v4</div>`;
+  } catch (e) {}
+}
+$$("[data-own]").forEach(b => b.onclick = async () => {
+  const domain = $("#domain").value === "*" ? ST.config.domains[0] : $("#domain").value;
+  $("#owner").innerHTML = `<span class="spin"></span>Running the update protocol on ${domain}… each epoch is prepared by the server, validated here, then anchored.`;
+  $$("[data-own]").forEach(x => x.disabled = true);
+  try {
+    let before = null; try { before = await layout(domain); } catch (e) {}
+    const r = await api("/api/owner/" + b.dataset.own, {domain});
+    renderOwner(r);
+    let after = null; try { after = await layout(domain); } catch (e) {}
+    const hl = renderMorph(r, before, after);
+    if (r.kind === "split" || r.kind === "merge") story(r.kind, storyData(r, before, after));
+    if (r.splits || r.merges) {
+      HDOM = domain; hiwDomain(domain); hiwTab("sm");
+      if (after) drawMap(domain, after, hl);
+      $("#howitworks").scrollIntoView({behavior: "smooth", block: "start"});
+    } else if (after && domain === curDomain()) drawMap(domain, after, hl);
+  }
+  catch (e) { $("#owner").innerHTML = `<span class="pill warn">not done</span> ${esc(e.message)}`; }
+  $$("[data-own]").forEach(x => x.disabled = false);
+  refreshDomains(); audit(); anchorBox();
+});
+function renderOwner(r) {
+  const ok = r.epochs.filter(e => e.ok), last = ok[ok.length - 1], bad = r.epochs.find(e => !e.ok);
+  let h = "";
+  if (r.plan) h += `<div class="muted">${r.kind === "split"
+      ? `Placement group ${r.plan.group}: ${r.plan.partitions_in_group} partition(s) of size ${r.plan.sizes_before.join(", ")}; ${r.plan.inserts_needed} insert(s) needed to pass θ_max = ${r.plan.theta_max}; ${r.plan.inserted} real file(s) inserted.`
+      : `Partition ${esc(String(r.plan.partition).slice(0, 8))} had ${r.plan.size_before} file(s); ${r.plan.deletes_planned} delete(s) planned to go below θ_min = ${r.plan.theta_min}.`}</div>`;
+  if (bad) h += `<div><span class="pill bad">epoch refused</span> ${esc(bad.error)}</div>`;
+  if (last) {
+    const structs = ok.flatMap(e => e.structure);
+    h += `<div style="margin:6px 0"><span class="pill ok">${ok.length} epoch(s) anchored</span> ${r.files_changed} file(s) ${r.kind === "delete" || r.kind === "merge" ? "deleted" : "inserted"} · <b>${r.splits}</b> split, <b>${r.merges}</b> merge · ${ms(r.total_ms)} in total · now ${num(r.partitions_now)} partitions, ${num(r.files_now)} files</div>` +
+      (structs.length ? `<div>${structs.map(s => s[0] === "split" ? `Split: partition ${esc(s[1])} → ${esc(s[2])} + ${esc(s[3])}` : `Merge: ${esc(s[1])} + ${esc(s[2])} → ${esc(s[3])}`).join("<br>")}</div>` : "") +
+      `<div class="flow"><span class="done">① Owner signs the request <em>${ms(last.timing.request_ms)}</em></span>›<span class="done">② Server prepares the new trees${last.stats.splits || last.stats.merges ? " (split/merge)" : ""} <em>${ms(last.timing.prepare_ms)}</em></span>›<span class="done">③ Owner validates <em>${ms(last.timing.validate_ms)}</em></span>›<span class="done">④ Root Anchor stores the new R_D <em>${ms(last.timing.anchor_ms)}</em></span>›<span class="done">⑤ Server finalizes <em>${ms(last.timing.finalize_ms)}</em></span></div>
+      <dl class="kv" style="margin-top:6px"><dt>Domains changed</dt><dd><b>${last.domains_changed.join(", ")}</b>; unchanged: ${last.domains_unchanged.join(", ") || "—"}</dd>
+      <dt>New anchored R_D</dt><dd>${hx(last.R_new, 16)} <span class="muted">epoch ${last.epoch_new}, was ${esc(last.R_old.slice(0, 12))}…</span></dd>
+      <dt>R_G (audit)</dt><dd>${hx(last.R_G_before, 10)} → ${hx(last.R_G_after, 10)}</dd>
+      <dt>Last epoch</dt><dd>${last.stats.partitions_changed} partition(s) changed, ${num(last.stats.keys_refreshed)} keyword commitments recomputed (v is in γ)</dd>
+      <dt>Last epoch time</dt><dd>request ${ms(last.timing.request_ms)} · server prepares ${ms(last.timing.prepare_ms)} · owner validates ${ms(last.timing.validate_ms)} · anchor ${ms(last.timing.anchor_ms)} · server finalizes ${ms(last.timing.finalize_ms)}</dd></dl>
+      <div class="muted">Search again: a new search verifies against the new root.</div>`;
+  }
+  $("#owner").innerHTML = h;
+}
+$("#reverify").onclick = async () => {
+  const domain = $("#domain").value === "*" ? ST.config.domains[0] : $("#domain").value;
+  try {
+    const r = await api("/api/reverify", {domain}), f = r.checks.find(c => c.key === r.failed);
+    $("#owner").innerHTML = `Previous accepted response of ${domain} (epoch ${r.response_epoch}) against the root anchored now (epoch ${r.anchored_epoch}):
+      <span class="pill ${r.accepted ? "ok" : "bad"}">${r.accepted ? "still accepted" : "REJECTED"}</span> ` + (f ? `${esc(f.label)}: ${esc(f.detail)}` : "no update happened since that search") + ` · ${ms(r.verify_ms)}`;
+  } catch (e) { $("#owner").innerHTML = `<span class="pill warn">not done</span> ${esc(e.message)}`; }
+};
+async function history() {
+  const rows = await api("/api/history");
+  $("#hist tbody").innerHTML = rows.slice().reverse().map(r => `<tr><td>${r.n}</td><td title="${esc(r.query)}">${esc(r.query.slice(0, 70))}${r.query.length > 70 ? "…" : ""}</td>
+    <td>${r.domains.join(",")}</td><td class="num">${r.kq}</td><td class="num">${num(r.partitions_touched)} / ${num(r.partitions_total)}</td><td class="num">${num(r.results)}</td>
+    <td class="num">${r.token_ms.toFixed(3)}</td><td class="num">${r.server_ms.toFixed(3)}</td><td class="num">${r.verify_ms.toFixed(3)}</td><td class="num">${num(r.proof_bytes)}</td><td class="num">${num(r.hashes_checked)}</td>
+    <td><span class="pill ${r.verdict === "VERIFIED" ? "ok" : r.verdict === "REJECTED" ? "bad" : "warn"}">${r.verdict}</span></td></tr>`).join("") || `<tr><td colspan="12" class="muted">No search yet.</td></tr>`;
+}
+$("#go").onclick = search;
+$("#q").addEventListener("keydown", e => { if (e.key === "Enter") search(); });
+boot();
+</script>
+</body>
+</html>

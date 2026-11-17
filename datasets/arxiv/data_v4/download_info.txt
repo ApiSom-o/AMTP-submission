@@ -1,0 +1,24 @@
+AMTP dataset-v4 - source information
+====================================
+
+Source          : Kaggle - Cornell-University/arxiv  (https://www.kaggle.com/datasets/Cornell-University/arxiv)
+File            : arxiv-metadata-oai-snapshot.json
+File date       : 2026-11-08 (date of the file on disk)
+Newest paper    : update_date 2026-10-30 (latest record in this snapshot)
+Records (papers): 3,233,620
+File size       : 5,667,572,509 bytes
+MD5             : 87cc4452d74247ae22cb8c9d8b7decee
+
+Selection       : datasets/arxiv/select_files_v4.py (seed 42): domains D1=cs, D2=math, D3=astro-hep, D4=condmat-quant;
+                  125000 initial files + 12500 insert-pool files per domain, title + abstract >= 30 words,
+                  chronological doc_id order.
+Keywords        : v4 = AMTP Phase 1 code (amtp_code/amtp/nlp.py), kappa=20 -> datasets/arxiv/build_v4.py
+
+How to check you have the same file:
+  Mac/Linux : md5 arxiv-metadata-oai-snapshot.json      (or: md5sum ...)
+  Windows   : certutil -hashfile arxiv-metadata-oai-snapshot.json MD5
+
+For the paper (Dataset section):
+  "We use the arXiv metadata snapshot from Kaggle (Cornell University; latest record dated 2026-10-30;
+   3,233,620 papers). We sample 125000 papers per domain (D1=cs, D2=math, D3=astro-hep, D4=condmat-quant) with seed 42 and extract
+   at most 20 keywords per paper with RAKE (AMTP Phase 1)."

@@ -1,0 +1,380 @@
+{
+  "dataset": "amtp_file_db dataset-v4 (arXiv Kaggle, 4 x 125,000 + 10% insert pool, seed 42, AMTP Phase 1 keywords kappa=20)",
+  "source": "arXiv metadata (Kaggle: Cornell-University/arxiv), one file = title + abstract, all real",
+  "seed": 42,
+  "total_initial_files": 500000,
+  "total_insert_pool_files": 50000,
+  "domains": {
+    "D1": {
+      "name": "cs",
+      "arxiv_group": "cmp-lg,cs",
+      "initial_files": 125000,
+      "insert_pool_files": 12500,
+      "distinct_keywords": 1393164,
+      "keyword_postings": 2490822,
+      "keywords_per_file": {
+        "mean": 19.93,
+        "median": 20,
+        "min": 4,
+        "max": 20,
+        "files_with_kappa": 122889
+      },
+      "max_keyword_doc_freq": 7944,
+      "keywords_in_2plus_files": 199160,
+      "by_database_size": {
+        "10000": {
+          "files": 10000,
+          "vocabulary": 127788,
+          "vocabulary_df_ge_2": 17426,
+          "keyword_file_pairs": 196681,
+          "max_doc_freq": 568
+        },
+        "25000": {
+          "files": 25000,
+          "vocabulary": 298921,
+          "vocabulary_df_ge_2": 42974,
+          "keyword_file_pairs": 494499,
+          "max_doc_freq": 1032
+        },
+        "50000": {
+          "files": 50000,
+          "vocabulary": 563581,
+          "vocabulary_df_ge_2": 83928,
+          "keyword_file_pairs": 992931,
+          "max_doc_freq": 1483
+        },
+        "75000": {
+          "files": 75000,
+          "vocabulary": 819949,
+          "vocabulary_df_ge_2": 123755,
+          "keyword_file_pairs": 1491876,
+          "max_doc_freq": 1781
+        },
+        "100000": {
+          "files": 100000,
+          "vocabulary": 1082038,
+          "vocabulary_df_ge_2": 162690,
+          "keyword_file_pairs": 1991291,
+          "max_doc_freq": 5310
+        },
+        "125000": {
+          "files": 125000,
+          "vocabulary": 1393164,
+          "vocabulary_df_ge_2": 199160,
+          "keyword_file_pairs": 2490822,
+          "max_doc_freq": 7944
+        }
+      },
+      "created_range": [
+        "1991-08-01 00:00:00",
+        "2026-10-29 17:56:53"
+      ],
+      "primary_categories": 40
+    },
+    "D2": {
+      "name": "math",
+      "arxiv_group": "alg-geom,dg-ga,funct-an,math,q-alg",
+      "initial_files": 125000,
+      "insert_pool_files": 12500,
+      "distinct_keywords": 785551,
+      "keyword_postings": 2335873,
+      "keywords_per_file": {
+        "mean": 18.69,
+        "median": 20,
+        "min": 0,
+        "max": 20,
+        "files_with_kappa": 93404
+      },
+      "max_keyword_doc_freq": 11075,
+      "keywords_in_2plus_files": 163282,
+      "by_database_size": {
+        "10000": {
+          "files": 10000,
+          "vocabulary": 80517,
+          "vocabulary_df_ge_2": 15463,
+          "keyword_file_pairs": 179182,
+          "max_doc_freq": 939
+        },
+        "25000": {
+          "files": 25000,
+          "vocabulary": 178096,
+          "vocabulary_df_ge_2": 35720,
+          "keyword_file_pairs": 450839,
+          "max_doc_freq": 2463
+        },
+        "50000": {
+          "files": 50000,
+          "vocabulary": 330830,
+          "vocabulary_df_ge_2": 68047,
+          "keyword_file_pairs": 912563,
+          "max_doc_freq": 5037
+        },
+        "75000": {
+          "files": 75000,
+          "vocabulary": 476330,
+          "vocabulary_df_ge_2": 99920,
+          "keyword_file_pairs": 1381263,
+          "max_doc_freq": 7485
+        },
+        "100000": {
+          "files": 100000,
+          "vocabulary": 621808,
+          "vocabulary_df_ge_2": 131693,
+          "keyword_file_pairs": 1855133,
+          "max_doc_freq": 9556
+        },
+        "125000": {
+          "files": 125000,
+          "vocabulary": 785551,
+          "vocabulary_df_ge_2": 163282,
+          "keyword_file_pairs": 2335873,
+          "max_doc_freq": 11075
+        }
+      },
+      "created_range": [
+        "1990-01-15 00:00:00",
+        "2026-10-29 17:52:57"
+      ],
+      "primary_categories": 34
+    },
+    "D3": {
+      "name": "astro-hep",
+      "arxiv_group": "astro-ph,gr-qc,hep-ex,hep-lat,hep-ph,hep-th,nucl-ex,nucl-th",
+      "initial_files": 125000,
+      "insert_pool_files": 12500,
+      "distinct_keywords": 987381,
+      "keyword_postings": 2445291,
+      "keywords_per_file": {
+        "mean": 19.56,
+        "median": 20,
+        "min": 0,
+        "max": 20,
+        "files_with_kappa": 113038
+      },
+      "max_keyword_doc_freq": 4134,
+      "keywords_in_2plus_files": 197318,
+      "by_database_size": {
+        "10000": {
+          "files": 10000,
+          "vocabulary": 94462,
+          "vocabulary_df_ge_2": 17847,
+          "keyword_file_pairs": 188524,
+          "max_doc_freq": 602
+        },
+        "25000": {
+          "files": 25000,
+          "vocabulary": 213832,
+          "vocabulary_df_ge_2": 42788,
+          "keyword_file_pairs": 475803,
+          "max_doc_freq": 1289
+        },
+        "50000": {
+          "files": 50000,
+          "vocabulary": 403971,
+          "vocabulary_df_ge_2": 82408,
+          "keyword_file_pairs": 961271,
+          "max_doc_freq": 2263
+        },
+        "75000": {
+          "files": 75000,
+          "vocabulary": 592527,
+          "vocabulary_df_ge_2": 121176,
+          "keyword_file_pairs": 1453136,
+          "max_doc_freq": 3122
+        },
+        "100000": {
+          "files": 100000,
+          "vocabulary": 782941,
+          "vocabulary_df_ge_2": 159461,
+          "keyword_file_pairs": 1948094,
+          "max_doc_freq": 3749
+        },
+        "125000": {
+          "files": 125000,
+          "vocabulary": 987381,
+          "vocabulary_df_ge_2": 197318,
+          "keyword_file_pairs": 2445291,
+          "max_doc_freq": 4134
+        }
+      },
+      "created_range": [
+        "1991-08-15 16:35:28",
+        "2026-10-29 17:58:09"
+      ],
+      "primary_categories": 14
+    },
+    "D4": {
+      "name": "condmat-quant",
+      "arxiv_group": "acc-phys,adap-org,ao-sci,atom-ph,chao-dyn,chem-ph,comp-gas,cond-mat,math-ph,mtrl-th,nlin,patt-sol,physics,plasm-ph,quant-ph,solv-int,supr-con",
+      "initial_files": 125000,
+      "insert_pool_files": 12500,
+      "distinct_keywords": 1157189,
+      "keyword_postings": 2458815,
+      "keywords_per_file": {
+        "mean": 19.67,
+        "median": 20,
+        "min": 3,
+        "max": 20,
+        "files_with_kappa": 115604
+      },
+      "max_keyword_doc_freq": 2972,
+      "keywords_in_2plus_files": 194678,
+      "by_database_size": {
+        "10000": {
+          "files": 10000,
+          "vocabulary": 101429,
+          "vocabulary_df_ge_2": 17474,
+          "keyword_file_pairs": 191107,
+          "max_doc_freq": 554
+        },
+        "25000": {
+          "files": 25000,
+          "vocabulary": 232952,
+          "vocabulary_df_ge_2": 40994,
+          "keyword_file_pairs": 480529,
+          "max_doc_freq": 1037
+        },
+        "50000": {
+          "files": 50000,
+          "vocabulary": 450735,
+          "vocabulary_df_ge_2": 79476,
+          "keyword_file_pairs": 969942,
+          "max_doc_freq": 1682
+        },
+        "75000": {
+          "files": 75000,
+          "vocabulary": 676536,
+          "vocabulary_df_ge_2": 118302,
+          "keyword_file_pairs": 1464579,
+          "max_doc_freq": 2153
+        },
+        "100000": {
+          "files": 100000,
+          "vocabulary": 906657,
+          "vocabulary_df_ge_2": 156767,
+          "keyword_file_pairs": 1961020,
+          "max_doc_freq": 2567
+        },
+        "125000": {
+          "files": 125000,
+          "vocabulary": 1157189,
+          "vocabulary_df_ge_2": 194678,
+          "keyword_file_pairs": 2458815,
+          "max_doc_freq": 2972
+        }
+      },
+      "created_range": [
+        "1992-04-10 20:31:18",
+        "2026-10-29 17:59:59"
+      ],
+      "primary_categories": 51
+    }
+  },
+  "distinct_keywords_all_domains": 4253734,
+  "keyword_extraction": {
+    "version": "v4 - AMTP Phase 1 code (amtp_code/amtp/nlp.py), kappa=20, identical to what AMTP indexes on import",
+    "method": "RAKE, score(p) = sum deg(w)/freq(w); whole document if |d| <= Theta_doc, else chunked",
+    "Theta_doc_words": 30000,
+    "L_ch_words": 400,
+    "L_ov_words": 80,
+    "kappa_top_k": 20,
+    "max_words_per_phrase": 3,
+    "normalization": "tokenise, lowercase, stop-word removal, rule-based lemmatisation (-ies->y, -s), dedup per file",
+    "input_text": "exact .txt file content (title + abstract), as read by import_folder.py",
+    "vocabulary_limit": "none",
+    "files_with_no_keyword": 2,
+    "mean_ms_per_file_cpu": 0.2736,
+    "note": "extracted once; every scheme reads documents.csv; extraction time is not part of any experiment"
+  },
+  "queries": {
+    "search_single": 480,
+    "boolean_multi": 320,
+    "empty_search_single_at_max_size": 0
+  },
+  "domain_group_sizes": {
+    "1": {
+      "G01": 500000
+    },
+    "2": {
+      "G01": 250000,
+      "G02": 250000
+    },
+    "4": {
+      "G01": 125000,
+      "G02": 125000,
+      "G03": 125000,
+      "G04": 125000
+    },
+    "8": {
+      "G01": 62484,
+      "G02": 62516,
+      "G03": 62525,
+      "G04": 62475,
+      "G05": 62345,
+      "G06": 62655,
+      "G07": 62498,
+      "G08": 62502
+    },
+    "16": {
+      "G01": 31205,
+      "G02": 31295,
+      "G03": 31300,
+      "G04": 31200,
+      "G05": 31250,
+      "G06": 31204,
+      "G07": 31201,
+      "G08": 31345,
+      "G09": 31202,
+      "G10": 30380,
+      "G11": 31614,
+      "G12": 31804,
+      "G13": 31250,
+      "G14": 31250,
+      "G15": 31250,
+      "G16": 31250
+    },
+    "32": {
+      "G01": 24416,
+      "G02": 22364,
+      "G03": 13410,
+      "G04": 12979,
+      "G05": 12946,
+      "G06": 12985,
+      "G07": 12982,
+      "G08": 12918,
+      "G09": 15616,
+      "G10": 15594,
+      "G11": 15626,
+      "G12": 15543,
+      "G13": 15821,
+      "G14": 15661,
+      "G15": 15569,
+      "G16": 15570,
+      "G17": 23347,
+      "G18": 18476,
+      "G19": 15377,
+      "G20": 14988,
+      "G21": 12877,
+      "G22": 14231,
+      "G23": 12343,
+      "G24": 13361,
+      "G25": 22176,
+      "G26": 14684,
+      "G27": 14685,
+      "G28": 14682,
+      "G29": 14724,
+      "G30": 14685,
+      "G31": 14683,
+      "G32": 14681
+    }
+  },
+  "database_sizes_per_domain": [
+    10000,
+    25000,
+    50000,
+    75000,
+    100000,
+    125000
+  ],
+  "build_minutes": 4.8
+}

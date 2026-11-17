@@ -1,0 +1,26 @@
+AMTP dataset-v3 (old) - source information
+==========================================
+This file describes the old dataset-v3 build. The current dataset-v4 build and its source snapshot
+are described in datasets/arxiv/data_v4/download_info.txt.
+
+Source          : Kaggle - Cornell-University/arxiv  (https://www.kaggle.com/datasets/Cornell-University/arxiv)
+File            : arxiv-metadata-oai-snapshot.json
+Kaggle version  : Version 308 (5.63 GB)
+File date       : 2026-10-17 (date of the file on disk)
+Newest paper    : update_date 2026-10-16 (latest record in this snapshot)
+Records (papers): 3,215,335
+File size       : 5,630,408,394 bytes
+MD5             : cee376053205bf9b350a5e6d73e198ef
+
+Keywords        : v3 = AMTP Phase 1 code (amtp_code/amtp/nlp.py), kappa=10, idempotent Norm -> datasets/arxiv/rebuild_keywords.py
+Build command   : python3 datasets/arxiv/dataset_forAMTP.py arxiv-metadata-oai-snapshot.json
+                  (defaults: domains cs,math,physics,stat; 50,000 files/domain; 5,000 insert-pool; seed 42; RAKE top-15)
+
+How to check you have the same file:
+  Mac/Linux : md5 arxiv-metadata-oai-snapshot.json      (or: md5sum ...)
+  Windows   : certutil -hashfile arxiv-metadata-oai-snapshot.json MD5
+  The result must be cee376053205bf9b350a5e6d73e198ef. If it differs, the dataset will NOT be the same.
+
+For the paper (Dataset section):
+  "We use the arXiv metadata snapshot from Kaggle (Cornell University; version 308, latest record dated
+   16 October 2026; 3,215,335 papers). We sample 50,000 papers per domain (cs, math, physics, stat) with seed 42."

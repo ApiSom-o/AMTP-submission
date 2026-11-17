@@ -1,0 +1,198 @@
+{
+  "dataset": "amtp_file_db dataset-v4 (arXiv Kaggle, 4 x 125,000 + 10% insert pool, seed 42, AMTP Phase 1 keywords kappa=20)",
+  "default_out": "data/amtp_file_db_v4",
+  "domains": [
+    {
+      "domain_id": "D1",
+      "name": "cs",
+      "arxiv_group": "cmp-lg,cs",
+      "initial_files": 125000,
+      "insert_pool_files": 12500
+    },
+    {
+      "domain_id": "D2",
+      "name": "math",
+      "arxiv_group": "alg-geom,dg-ga,funct-an,math,q-alg",
+      "initial_files": 125000,
+      "insert_pool_files": 12500
+    },
+    {
+      "domain_id": "D3",
+      "name": "astro-hep",
+      "arxiv_group": "astro-ph,gr-qc,hep-ex,hep-lat,hep-ph,hep-th,nucl-ex,nucl-th",
+      "initial_files": 125000,
+      "insert_pool_files": 12500
+    },
+    {
+      "domain_id": "D4",
+      "name": "condmat-quant",
+      "arxiv_group": "acc-phys,adap-org,ao-sci,atom-ph,chao-dyn,chem-ph,comp-gas,cond-mat,math-ph,mtrl-th,nlin,patt-sol,physics,plasm-ph,quant-ph,solv-int,supr-con",
+      "initial_files": 125000,
+      "insert_pool_files": 12500
+    }
+  ],
+  "parts": {
+    "D1_cs.000.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 13383443,
+      "sha256": "97e5cb3e27882e950327406631d19de36ce8390685dab8dbe546120b2566ca6c"
+    },
+    "D1_cs.001.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 14632135,
+      "sha256": "1c3ff8118b75dbc9507375cc8455db88258fd34fb5cf46112549246454d03a6d"
+    },
+    "D1_cs.002.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 15235801,
+      "sha256": "384a6e0150b22d107a0acaa212e6ae5cc5a6437f4c3ee4e9588d1a7768939b81"
+    },
+    "D1_cs.003.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 15817300,
+      "sha256": "2c16e8d725d2ee00522dba07a85a433bdd28412380cb9ca08e92c8bd96d81e79"
+    },
+    "D1_cs.004.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 17430186,
+      "sha256": "a227a1ba34badac883f6994c8206b3d1e7a21fb16ea447cabd2de69fb4181f1b"
+    },
+    "D1_cs.005.jsonl.gz": {
+      "documents": 12500,
+      "bytes": 7715461,
+      "sha256": "b6c103ccc6f426d0bdf38264098c62cd664057ddd922802df3612ac0a68c079d"
+    },
+    "D2_math.000.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 9029568,
+      "sha256": "4f851dba6648775b46fde1207420f95d15809d563de8c64dd2766e56bc8689d4"
+    },
+    "D2_math.001.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 9779299,
+      "sha256": "772d49e7b0b74ea5082a46d5da25630fca6042be7fc767535e6d33f85da7b598"
+    },
+    "D2_math.002.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 10309109,
+      "sha256": "a3e380caf7fa40899e9259425ce637253e1d8677cbb5d454a340a466be6414ee"
+    },
+    "D2_math.003.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 10838592,
+      "sha256": "f3fcfc1ea6184cc62abf2ca380f328042f572937e8e21ae4c8583fd1fc85df7f"
+    },
+    "D2_math.004.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 11794279,
+      "sha256": "52a6e29bd86d77de659aeed7177bd5546a5aee22c0a759b14b3bfb8b9838bf18"
+    },
+    "D2_math.005.jsonl.gz": {
+      "documents": 12500,
+      "bytes": 5184314,
+      "sha256": "848e61bc1ebfea3d8d4c8d46e83cb25c16e7e053633d5100798a2796da2f1e6a"
+    },
+    "D3_astro-hep.000.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 11012436,
+      "sha256": "afc7ea71bb73d1f985d7395db7a06f61cbbb3ee92a2c5cfc032b59221f7c3353"
+    },
+    "D3_astro-hep.001.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 12568262,
+      "sha256": "b6befba4d0f1aad97cd389e42ca4e41a664ffd3a2426ddf28baa28edb68a14ac"
+    },
+    "D3_astro-hep.002.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 13876499,
+      "sha256": "7799d25989b6efbe20564c86bbfe27ddf5311d70a5bf22bd76ddf615fb5267c0"
+    },
+    "D3_astro-hep.003.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 14741036,
+      "sha256": "07bc143bcfe5f2b9bd084c547ee7e80655622505eaa8f39bf7e401377fb22ebb"
+    },
+    "D3_astro-hep.004.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 15772005,
+      "sha256": "cbfbe2f5bd0c9895b9c3f459c897bad350300c245782ade2abd07f4dcd141a8b"
+    },
+    "D3_astro-hep.005.jsonl.gz": {
+      "documents": 12500,
+      "bytes": 6807896,
+      "sha256": "0682a00fda9abe8a08580342928718af34383eba1b73015bd63fed5de66d27b1"
+    },
+    "D4_condmat-quant.000.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 10615504,
+      "sha256": "74f486a77b03714039564e8969785a2b73309174fc5d30196e49ebe46943367c"
+    },
+    "D4_condmat-quant.001.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 11954423,
+      "sha256": "dbe7c1c2713d8fd1447b0ae2ea6ebe80bf4faff17cd7626b3c7aa13c5d04b58e"
+    },
+    "D4_condmat-quant.002.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 13276247,
+      "sha256": "e72e740567848a2ca8be3acec0c7f2a1247fe4bc83887972a4e9648d84fcfb69"
+    },
+    "D4_condmat-quant.003.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 14224898,
+      "sha256": "cd0db443dd87c59368aaeb808de901e947e631f544d5dd61ce81bb57ec3e0305"
+    },
+    "D4_condmat-quant.004.jsonl.gz": {
+      "documents": 25000,
+      "bytes": 15360172,
+      "sha256": "42f69010db02f0bdd1961e061d79d80d367268f1c09383d92e34905bca5c5c71"
+    },
+    "D4_condmat-quant.005.jsonl.gz": {
+      "documents": 12500,
+      "bytes": 6624338,
+      "sha256": "72cef5911fad8b9532a3c358d93b352aaf767f819927d0dcf2c188360e8db268"
+    }
+  },
+  "rebuilt_files": {
+    "documents.csv": "fb955a1ffd5c3e5d87a7d7df951676c4da77d16d4c753b740e579b039bac60cb",
+    "domain_keywords.csv": "9ba80ece91a8ab98b78676a03f87076f2be446cb769755c398e3e3697ee80aa2"
+  },
+  "copied_files": {
+    "summary.json": {
+      "stored_as": "summary.json",
+      "sha256": "430359275fd341b181dcf8c9bba8b4c895166ba1fe65fc838282a15922ac5a52"
+    },
+    "README.txt": {
+      "stored_as": "README.txt",
+      "sha256": "3f64269fc0baf4b1b4c2832a6fb9e9bd38e3f7db207ecb3358c49bd92646a966"
+    },
+    "download_info.txt": {
+      "stored_as": "download_info.txt",
+      "sha256": "e51bbc4fd0727a626fdd06be1c1ba6567c9692c6334cc042c41fa2991860516d"
+    },
+    "queries_search_single.jsonl": {
+      "stored_as": "queries_search_single.jsonl",
+      "sha256": "f1dedc5f5f74eefff1a2cc34f1d2ecd8603bc7bda3b770a8750f638543f34533"
+    },
+    "queries_boolean_multi.jsonl": {
+      "stored_as": "queries_boolean_multi.jsonl",
+      "sha256": "03ab95b29970386ce2f5c58dceee2785f2832d85d13f48763cddbead25f999a4"
+    },
+    "verify_keywords.csv": {
+      "stored_as": "verify_keywords.csv",
+      "sha256": "6745e302d6c198e15a95ffef547f1a78f3bf56106066f180ac61eec26df567ed"
+    },
+    "tamper_sets.jsonl": {
+      "stored_as": "tamper_sets.jsonl",
+      "sha256": "3b3801fb5c05a5b614c5da29f1b67c665bb8dbe6b5c5317b56b2b43c08c097b9"
+    },
+    "domain_groups.csv": {
+      "stored_as": "domain_groups.csv",
+      "sha256": "f8223a96ea24d263eebc345105b099a4f1b0183a3ad71ca47743572b9482ffed"
+    },
+    "delete_order.csv": {
+      "stored_as": "delete_order.csv.gz",
+      "sha256": "077049d50b5c1b5d80c3345d1de2df3ce9d238bfcf0c7e5d26fbf1a6f5ea9e61"
+    }
+  }
+}
